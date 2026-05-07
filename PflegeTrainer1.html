@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#09101F"/>
+<title>🏥 PflegeTrainer Saarland 2026</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#09101F;color:#F1F5F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overscroll-behavior:none;}
+button{font-family:inherit;transition:opacity 0.15s,transform 0.1s;}
+button:active{opacity:0.8;transform:scale(0.98);}
+input:focus{outline:none;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:#111927;}
+::-webkit-scrollbar-thumb{background:#1F2D40;border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef}=React;
+
+// ── Design ──────────────────────────────────────────────────────────────────
+const D={bg:"#09101F",surface:"#111927",surface2:"#1A2435",border:"#1F2D40",text:"#F1F5F9",muted:"#64748B",dimmed:"#374151",green:"#10B981",greenBg:"#0A2E22",red:"#EF4444",redBg:"#2D0A0A",amber:"#F59E0B"};
+const sBtn=(bg,outline)=>({padding:"13px 18px",background:outline?"transparent":bg,color:outline?D.text:"#fff",border:`1.5px solid ${outline?D.border:bg}`,borderRadius:13,fontWeight:700,fontSize:16,cursor:"pointer",width:"100%",fontFamily:"inherit"});
+function lev(a,b){if(!a.length)return b.length;if(!b.length)return a.length;const m=Array.from({length:b.length+1},(_,i)=>[i,...Array(a.length).fill(0)]);for(let j=0;j<=a.length;j++)m[0][j]=j;for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)m[i][j]=b[i-1]===a[j-1]?m[i-1][j-1]:1+Math.min(m[i-1][j-1],m[i][j-1],m[i-1][j]);return m[b.length][a.length];}
+const norm=s=>s.toLowerCase().trim().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss");
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+// ── 200 Fragen (10 pro Stage) ────────────────────────────────────────────────
+const POOLS={
+w1s1:[
+{type:"REEL",title:"Pflegeprozess – 6 Schritte",pts:["1. Informationssammlung  2. Ressourcen & Probleme  3. Pflegeziele (SMART)","4. Maßnahmen planen  5. Durchführung  6. Evaluation","SMART = Patientenzustand beschreiben – NICHT Pflegehandlung!"],q:"In welchem Schritt wird geprüft, ob das Pflegeziel erreicht wurde?",opts:["Informationssammlung","Maßnahmenplanung","Evaluation","Durchführung"],correct:2,why:"Evaluation = 6. Schritt: Zielerreichung prüfen und Prozess bei Bedarf anpassen."},
+{type:"MC",q:"Frau M., 68 J., Herzinsuffizienz. Welches ist ein korrektes SMART-Ziel?",opts:["Ich mobilisiere Frau M. täglich","Frau M. geht bis Freitag mit Rollator 10 m selbständig","Frau M. soll mehr bewegt werden","Die Mobilisation wird verbessert"],correct:1,why:"SMART = Patientenzustand, terminiert, messbar, konkret. Option B beschreibt was die Patientin kann."},
+{type:"FILL",q:"SMART-Ziele beschreiben den ___ des Patienten, nicht die Pflegehandlung.",answer:"Zustand",why:"'Herr M. geht...' – nicht 'Ich mobilisiere...'. Patientenzustand!"},
+{type:"TF",q:"Ein potenzielles Problem ist bereits vorhanden und direkt beobachtbar.",correct:false,why:"Potenzielles Problem = RISIKO, das noch nicht eingetreten ist. Aktuell = bereits vorhanden."},
+{type:"MC",q:"Frau L. wird von ihrer Familie gepflegt. Welcher Ressourcentyp ist das?",opts:["Physische Ressource","Materielle Ressource","Soziale Ressource","Psychische Ressource"],correct:2,why:"Soziale Ressourcen = Unterstützung durch Angehörige, Freunde, soziales Netzwerk."},
+{type:"TF",q:"Im PES-Format steht 'E' für 'Ergebnis'.",correct:false,why:"PES = Problem · Ätiologie (Ursache) · Symptome. E = Ätiologie!"},
+{type:"MC",q:"Welcher Schritt folgt auf die Zielformulierung im Pflegeprozess?",opts:["Informationssammlung","Evaluation","Durchführung","Maßnahmenplanung"],correct:3,why:"Reihenfolge: Info → Probleme → Ziele → Maßnahmen planen → Durchführung → Evaluation."},
+{type:"MC",q:"Was ist im 1. Schritt des Pflegeprozesses zu tun?",opts:["Sofort Pflegeziele festlegen","Bio-psycho-soziale Informationssammlung durchführen","Maßnahmen einleiten","Den Arzt informieren"],correct:1,why:"Schritt 1 = Informationssammlung: vollständige Anamnese bio-psycho-sozial."},
+{type:"FILL",q:"Der Pflegeprozess nach Fiechter & Meier hat ___ Schritte.",answer:"sechs",why:"6 Schritte: Informationssammlung, Ressourcen/Probleme, Ziele, Planung, Durchführung, Evaluation."},
+{type:"TF",q:"Die Evaluation kann dazu führen, dass der gesamte Pflegeprozess angepasst wird.",correct:true,why:"Ja – Evaluation prüft Zielerreichung. Falls nicht erreicht: Prozess neu starten. Kreislauf!"},
+],
+w1s2:[
+{type:"REEL",title:"ABEDL & SIS",pts:["13 ABEDL (Krohwinkel): Nr.1 = Kommunizieren · Nr.13 = Existenzielle Erfahrungen","SIS – 4 Felder: Stammblatt · Themenfelder · Maßnahmenplanung · Berichtsblatt","Risikomatrix SIS: Dekubitus · Sturz · Inkontinenz · Schmerz · Ernährung · Kognition"],q:"Wie viele Themenfelder hat die SIS?",opts:["4","6","8","13"],correct:1,why:"SIS: 6 Themenfelder (Kognition, Mobilität, Krankheitsbez. Anforderungen, Selbstversorgung, Soziales, Wohnen)."},
+{type:"MC",q:"Welche ABEDL ist direkt betroffen bei einem Patienten mit Inkontinenz?",opts:["Sich bewegen","Ausscheiden","Sich beschäftigen","Sich kleiden"],correct:1,why:"ABEDL Nr. 6 = Ausscheiden. Inkontinenz betrifft diese Aktivität direkt."},
+{type:"FILL",q:"SIS steht für Strukturierte ___.",answer:"Informationssammlung",why:"SIS = Strukturierte Informationssammlung – Dokumentationsinstrument in der Langzeitpflege."},
+{type:"TF",q:"Die SIS wird ausschließlich im Krankenhaus eingesetzt.",correct:false,why:"SIS wird in der LANGZEITPFLEGE eingesetzt: stationär (Pflegeheim) UND ambulant."},
+{type:"MC",q:"Frau B. kann sich noch selbst anziehen. Welche ABEDL ist ressourcenstark?",opts:["Ausscheiden","Sich kleiden","Soziale Bereiche sichern","Vitalfunktionen aufrechterhalten"],correct:1,why:"ABEDL Nr. 7 = Sich kleiden. Diese ABEDL ist noch intakt – wichtige Ressource!"},
+{type:"TF",q:"ABEDL Nr. 13 lautet 'Mit existenziellen Erfahrungen umgehen'.",correct:true,why:"Ja – Nr. 13 = Mit existenziellen Erfahrungen umgehen (Sterben, Trauer, Glaube, Sinn)."},
+{type:"MC",q:"Was erfasst die Risikomatrix der SIS?",opts:["Nur Dekubitus und Sturz","Dekubitus, Sturz, Inkontinenz, Schmerz, Ernährung, Kognition","Alle 13 ABEDL","Pflegeziele und Maßnahmen"],correct:1,why:"SIS-Risikomatrix: 6 Risikobereiche."},
+{type:"MC",q:"In welchem SIS-Feld werden Pflegemaßnahmen dokumentiert?",opts:["Stammblatt","Themenfelder","Maßnahmenplanung","Berichtsblatt"],correct:2,why:"3. Feld = Maßnahmenplanung: hier werden konkrete Pflegemaßnahmen geplant."},
+{type:"FILL",q:"Die 13 ABEDL wurden von ___ entwickelt.",answer:"Krohwinkel",why:"Monika Krohwinkel entwickelte das ABEDL-Modell."},
+{type:"TF",q:"ABEDL Nr. 1 ist 'Sich bewegen'.",correct:false,why:"ABEDL Nr. 1 = KOMMUNIZIEREN. Sich bewegen ist Nr. 2!"},
+],
+w1s3:[
+{type:"REEL",title:"Pflegetheorien",pts:["Orem: 3 Systeme – vollst. kompensatorisch · teilweise · unterstützend-erzieherisch","Peplau: 4 Phasen – Orientierung · Identifikation · Nutzung · Ablösung","Henderson: 14 Grundbedürfnisse | Krohwinkel: ABEDL + aktivierende Pflege"],q:"Welches Orem-System gilt bei einer Diabetiker-Schulung?",opts:["Vollständig kompensatorisch","Teilweise kompensatorisch","Unterstützend-erzieherisch","Reaktiv"],correct:2,why:"Unterstützend-erzieherisch: Patient handelt selbst, PFK berät/schult. Typisch Schulungen."},
+{type:"MC",q:"Herr K. ist beatmet und bewusstlos. Welches Orem-System gilt?",opts:["Unterstützend-erzieherisch","Teilweise kompensatorisch","Vollständig kompensatorisch","Kooperativ"],correct:2,why:"Vollständig kompensatorisch: PFK übernimmt ALLES. Typisch: Bewusstlosigkeit, Beatmung."},
+{type:"FILL",q:"Peplau beschreibt ___ Phasen der therapeutischen Pflegebeziehung.",answer:"vier",why:"4 Phasen: Orientierung → Identifikation → Nutzung → Ablösung."},
+{type:"TF",q:"Nach Henderson soll Pflege dem Patienten helfen, was er täte, wenn er Kraft, Wille oder Wissen hätte.",correct:true,why:"Das ist Hendersons Kernaussage: Pflege kompensiert Defizite und fördert Selbstständigkeit."},
+{type:"MC",q:"In welcher Peplau-Phase nutzt der Patient aktiv die Pflegeangebote?",opts:["Orientierungsphase","Identifikationsphase","Nutzungsphase","Ablösungsphase"],correct:2,why:"Nutzungsphase (3. Phase): Patient nutzt Pflegeangebote aktiv."},
+{type:"TF",q:"Krohwinkels ABEDL-Modell betrachtet nur körperliche Bedürfnisse.",correct:false,why:"ABEDL = Aktivitäten UND existenzielle Erfahrungen. Ganzheitlich: körperlich, psychisch, sozial."},
+{type:"MC",q:"Patient soll nach Schlaganfall wieder selbst essen lernen. Was beschreibt Krohwinkels Ansatz?",opts:["Mahlzeit vollständig übernehmen","Aktivierende Pflege – Selbständigkeit fördern","Nur Ergotherapie","Nichts tun"],correct:1,why:"Krohwinkel: aktivierende/reaktivierende Pflege – Selbständigkeit FÖRDERN, nicht übernehmen."},
+{type:"MC",q:"In welcher Peplau-Phase verabschiedet sich der Patient bei der Entlassung?",opts:["Orientierungsphase","Nutzungsphase","Identifikationsphase","Ablösungsphase"],correct:3,why:"Ablösungsphase (4. Phase): Patient löst sich von der PFK, wird selbstständig, Entlassung."},
+{type:"FILL",q:"Bei Orem teilen sich PFK und Patient die Aufgaben im ___ kompensatorischen System.",answer:"teilweise",why:"Teilweise kompensatorisch: Aufgabenteilung. Typisch postoperativ oder in der Reha."},
+{type:"TF",q:"Henderson formulierte 13 Grundbedürfnisse.",correct:false,why:"Henderson: 14 Grundbedürfnisse. Krohwinkel: 13 ABEDL. Zahlen nicht verwechseln!"},
+],
+w1s4:[
+{type:"REEL",title:"Assessment-Skalen",pts:["Braden ≤18 = Dekubitusrisiko | Norton <25 = Risiko | NIEDRIGER Wert = HÖHERES Risiko!","Morse ≥45 = hohes Sturzrisiko | Barthel 0–100 (0 = schwer pflegebedürftig)","BESD = Schmerzskala bei Demenz | NRS 0–10 | MMSE <24 = Verdacht auf Demenz"],q:"Frau K. hat Braden-Score 16. Was bedeutet das?",opts:["Kein Risiko","Dekubitusrisiko – sofort Prophylaxe!","Hohe Selbständigkeit","Nur leichtes Risiko"],correct:1,why:"Braden ≤18 = Dekubitusrisiko. Score 16 → sofort Prophylaxemaßnahmen!"},
+{type:"MC",q:"Herr M., 84 J., Barthel-Index 35. Welcher Pflegebedarf?",opts:["Kein Pflegebedarf","Leichter (81–100)","Mittlerer (31–65)","Schwerer (0–30)"],correct:2,why:"Barthel 31–65 = mittlerer Pflegebedarf. Regelmäßige Unterstützung nötig."},
+{type:"FILL",q:"Die BESD-Skala wird bei Patienten mit ___ zur Schmerzerfassung eingesetzt.",answer:"Demenz",why:"BESD = Beobachtungs-Schmerzskala für Demenzpatienten – wenn verbale Kommunikation nicht möglich."},
+{type:"TF",q:"Morse Fall Scale Wert 30 bedeutet hohes Sturzrisiko.",correct:false,why:"Morse: ≥45 = hohes Sturzrisiko. Wert 30 liegt darunter."},
+{type:"MC",q:"Welche Skala für einen kommunikationsfähigen Patienten mit akuten Schmerzen?",opts:["BESD","MMSE","NRS (Numerische Rating-Skala)","Norton-Skala"],correct:2,why:"NRS 0–10: verbal, einfach anwendbar bei kommunikationsfähigen Patienten."},
+{type:"TF",q:"Der Barthel-Index erfasst Aktivitäten wie Essen, Anziehen, Gehen.",correct:true,why:"Ja – Barthel: 10 ADL-Bereiche, bewertet funktionelle Selbständigkeit (0–100 Punkte)."},
+{type:"MC",q:"Was messen Sie mit dem MMSE?",opts:["Sturzrisiko","Dekubitusrisiko","Kognitive Leistungsfähigkeit / Demenzscreening","Schmerzen bei Demenz"],correct:2,why:"MMSE: max. 30 Punkte, <24 = Verdacht auf Demenz. Kognitives Screening-Instrument."},
+{type:"MC",q:"Frau L. hat Norton-Score 22. Was tun?",opts:["Nichts – kein Risiko","Dekubitusprophylaxe einleiten!","Sturzprophylaxe einleiten","Schmerzskala anwenden"],correct:1,why:"Norton <25 = Dekubitusrisiko! Score 22 → sofort Prophylaxemaßnahmen."},
+{type:"FILL",q:"Der Braden-Score hat ___ Subskalen.",answer:"sechs",why:"Braden: 6 Subskalen (Sensorik, Feuchtigkeit, Aktivität, Mobilität, Ernährung, Reibung)."},
+{type:"TF",q:"Bei der NRS bedeutet eine Zahl nahe 10 wenig Schmerz.",correct:false,why:"NRS: 0 = kein Schmerz, 10 = unerträglicher Schmerz. Hoch = STARKER Schmerz!"},
+],
+w1s5:[
+{type:"REEL",title:"Prophylaxen – Dauerbrenner",pts:["Dekubitus: 30°-Lagerung, 2h-Intervall (nachts 4h), Stadien I–IV","VIRCHOW-Trias: Gefäßwandschaden · Strömungsverlangsamung · Hyperkoagulabilität","Sturz: intern (Schwindel, Diuretika) + extern (Umgebung) → Niedrigbett, Antirutschsocken"],q:"Welche 3 Faktoren bilden die VIRCHOW-Trias?",opts:["Schmerz, Fieber, Entzündung","Gefäßwandschaden, Strömungsverlangsamung, Hyperkoagulabilität","Immobilität, Dehydration, Adipositas","Tachykardie, Hypotonie, Tachypnoe"],correct:1,why:"VIRCHOW-Trias = Grundlage der Thromboseentstehung. Alle 3 Faktoren kennen!"},
+{type:"MC",q:"Herr B. liegt nach Hüft-OP immobil. Lagerungsabstand tagsüber?",opts:["Alle 30 Minuten","Alle 2 Stunden (max.)","Alle 4–6 Stunden","Nur bei Beschwerden"],correct:1,why:"Dekubitusprophylaxe: tagsüber alle 2 Stunden umlagern (nachts max. 4h). 30°-Schräglage!"},
+{type:"FILL",q:"Stadium ___ des Dekubitus zeigt eine nicht wegdrückbare Rötung der intakten Haut.",answer:"I",why:"Dekubitus Stadium I = nicht wegdrückbare Rötung bei intakter Haut – erste Warnstufe!"},
+{type:"TF",q:"Antitrombosestrümpfe ersetzen die Frühmobilisation bei der Thromboseprophylaxe.",correct:false,why:"ATS sind eine Maßnahme, ersetzen aber NICHT die Frühmobilisation. Beide kombinieren!"},
+{type:"MC",q:"Welche Maßnahme gehört zur Pneumonieprophylaxe?",opts:["Kompressionsstrümpfe","Atemübungen und Triflow","Wechsellagerung alle 2h","Kalorienzufuhr steigern"],correct:1,why:"Pneumonieprophylaxe: Atemübungen, Triflow, Frühmobilisation, Sekretmobilisation."},
+{type:"TF",q:"Intertrigoprophylaxe verhindert Feuchtigkeitsansammlungen in Hautfalten.",correct:true,why:"Ja – Intertigo: Reibung + Feuchtigkeit in Hautfalten. Maßnahmen: Feuchtigkeitskontrolle, Hautpflege."},
+{type:"MC",q:"Was ist eine extrinsische Sturzprophylaxemaßnahme?",opts:["Diuretika absetzen","Schwindel behandeln","Nachtlicht im Flur anbringen","Gleichgewichtsübungen"],correct:2,why:"Extrinsisch = Umgebungsfaktoren anpassen. Nachtlicht = Umgebungsmaßnahme."},
+{type:"MC",q:"Dekubitus Stadium IV bedeutet:",opts:["Nicht wegdrückbare Rötung","Blasen oder Hautdefekt","Tiefe Wunde bis Faszie","Gewebsuntergang bis Knochen/Sehnen"],correct:3,why:"Stadium IV = schwerster Dekubitus: vollständiger Gewebsuntergang, freiliegende Knochen."},
+{type:"FILL",q:"Bei der Kontrakturprophylaxe werden passive und aktive ___ durchgeführt.",answer:"Bewegungsübungen",why:"PROM (passiv) + AROM (aktiv) = Bewegungsübungen zur Gelenkerhaltung."},
+{type:"TF",q:"Heparin s.c. ist eine medikamentöse Thromboseprophylaxe.",correct:true,why:"Ja – NMH (z.B. Clexane) subkutan = wichtige medikamentöse Thromboseprophylaxe."},
+],
+w2s1:[
+{type:"REEL",title:"Watzlawick & 4-Ohren-Modell",pts:["Axiom 1: Man kann NICHT NICHT kommunizieren – auch Schweigen ist Kommunikation!","Axiom 2: Inhalts- UND Beziehungsaspekt – Beziehung überlagert den Inhalt!","4-Ohren: Sachinhalt · Selbstoffenbarung · Beziehungshinweis · Appell"],q:"Welches Axiom beschreibt verbal (digital) vs. nonverbal (analog)?",opts:["Axiom 1","Axiom 2","Axiom 4","Axiom 5"],correct:2,why:"Axiom 4: digital = verbal (Worte) vs. analog = nonverbal (Mimik, Gestik, Tonfall)."},
+{type:"MC",q:"PFK sagt gereizt: 'Das Frühstück steht auf dem Tisch.' Patient hört: 'Du bist zu langsam.' Welches Ohr?",opts:["Sachohr","Selbstoffenbarungsohr","Beziehungsohr","Appellohr"],correct:2,why:"Beziehungsohr: zeigt, wie der Sender zum Empfänger steht – hier: Ungeduld, Vorwurf."},
+{type:"FILL",q:"Watzlawick beschreibt ___ Axiome der menschlichen Kommunikation.",answer:"fünf",why:"Watzlawick: 5 Axiome."},
+{type:"TF",q:"Laut Watzlawick ist Schweigen keine Form der Kommunikation.",correct:false,why:"Axiom 1: Man kann NICHT NICHT kommunizieren. Auch Schweigen sendet eine Botschaft!"},
+{type:"MC",q:"Patient: 'Ich brauche keine Hilfe.' PFK hört auf welchem Ohr: 'Ich will selbständig bleiben'?",opts:["Sachohr","Selbstoffenbarungsohr","Beziehungsohr","Appellohr"],correct:1,why:"Selbstoffenbarungsohr: Patient gibt etwas über sich preis – seinen Wunsch nach Selbständigkeit."},
+{type:"TF",q:"Komplementäre Kommunikation findet zwischen zwei gleichrangigen Personen statt.",correct:false,why:"Komplementär = ungleichrangig (Arzt–Patient). Symmetrisch = gleichrangig (Kollegen)."},
+{type:"MC",q:"Was gehört zum 'Appell' im 4-Ohren-Modell?",opts:["Was der Sender über sich preisgibt","Was der Sender vom Empfänger möchte","Wie der Sender zum Empfänger steht","Sachlicher Informationsgehalt"],correct:1,why:"Appell = was der Sender vom Empfänger will: Bitte, Aufforderung, Handlungserwartung."},
+{type:"MC",q:"Herr F., 72 J., ist aphasisch nach Schlaganfall. Welche Strategie?",opts:["Komplexe Fragen stellen","Kurze Sätze, Ja/Nein-Fragen, Bilder nutzen, Zeit geben","Lauter sprechen","Nur schriftlich kommunizieren"],correct:1,why:"Bei Aphasie: kurze Sätze, Ja/Nein-Fragen, Bilder, Geduld. Logopädie einbeziehen!"},
+{type:"FILL",q:"Axiom 2: Jede Kommunikation hat einen Inhaltsaspekt und einen ___.",answer:"Beziehungsaspekt",why:"Axiom 2: Inhaltsaspekt (WAS) + Beziehungsaspekt (WIE). Beziehung überlagert Inhalt!"},
+{type:"TF",q:"Das Sachohr ist für den faktischen Informationsgehalt einer Nachricht zuständig.",correct:true,why:"Ja – Sachohr = Fakten, Daten, sachliche Information."},
+],
+w2s2:[
+{type:"REEL",title:"Validation & Basale Stimulation",pts:["Validation (Naomi Feil): Gefühle ERNST nehmen, NICHT korrigieren – in subjektive Realität eingehen","Basale Stimulation (Fröhlich): 9 Wahrnehmungsbereiche – Wahrnehmung aktivieren","Immer ankündigen! Auch bei schwerer Bewusstseinsstörung!"],q:"Frau P., 86 J., sucht ihre 'Kinder'. Was ist richtig nach Validation?",opts:["'Ihre Kinder sind erwachsen.' – Realität zeigen","'Ihre Kinder kommen gleich.'","'Sie vermissen Ihre Kinder sehr.' – Gefühle spiegeln","Ablenken mit Musik"],correct:2,why:"Validation: Gefühle SPIEGELN, NICHT korrigieren. 'Sie vermissen...' validiert das Gefühl."},
+{type:"MC",q:"Welcher Wahrnehmungsbereich der Basalen Stimulation wird durch Lieblingsparfüm angesprochen?",opts:["Somatisch","Vibratorisch","Olfaktorisch","Gustatorisch"],correct:2,why:"Olfaktorisch = Geruchssinn."},
+{type:"FILL",q:"Die Basale Stimulation definiert ___ Wahrnehmungsbereiche.",answer:"neun",why:"9 Bereiche: Somatisch, Vibratorisch, Vestibulär, Oral, Olfaktorisch, Gustatorisch, Taktil, Visuell, Auditiv."},
+{type:"TF",q:"Bei der Validation soll die PFK erklären, dass die Wahrnehmung des Patienten falsch ist.",correct:false,why:"NEIN – Validation = NICHT korrigieren! Subjektive Realität anerkennen, Gefühle spiegeln."},
+{type:"MC",q:"Herr W., 90 J., fortgeschrittene Demenz. Welche Validationstechnik?",opts:["Intensive Diskussion über Realität","Sanfte Berührung, Körperkontakt, emotionale Ebene","Laute deutliche Ansprache","Aussagen ignorieren"],correct:1,why:"Bei fortgeschrittener Demenz: sanfte Berührung, ruhige Stimme, emotionale Ebene."},
+{type:"TF",q:"Basale Stimulation richtet sich auch an Patienten, die sich nicht verbal äußern können.",correct:true,why:"Ja – besonders geeignet für Koma, Demenz, Aphasie."},
+{type:"MC",q:"Was bedeutet 'vestibulär' bei der Basalen Stimulation?",opts:["Geruchswahrnehmung","Gleichgewichtssinn und Bewegungswahrnehmung","Tastwahrnehmung","Körperwahrnehmung"],correct:1,why:"Vestibulär = Gleichgewichtssinn + Wahrnehmung von Bewegung/Lageänderung."},
+{type:"MC",q:"Welche 4 Phasen beschreibt Naomi Feil bei Demenz?",opts:["Orientierung → Verwirrung → Vegetieren → Ablösung","Unglückl. Desorientierung → Zeitverwirrtheit → Repetit. Bewegungen → Vegetieren","Kontakt → Vertrauen → Kommunikation → Ablösung","Orientierung → Identifikation → Nutzung → Ablösung"],correct:1,why:"Feil: Unglückliche Desorientierung → Zeitverwirrtheit → Repetitive Bewegungen → Vegetieren."},
+{type:"FILL",q:"Bei Basaler Stimulation soll die PFK den Patienten stets ___, bevor sie beginnt.",answer:"ankündigen",why:"IMMER ankündigen: verbal ansprechen – auch bei bewusstseinseingeschränkten Patienten!"},
+{type:"TF",q:"Der gustatorische Bereich der Basalen Stimulation bezieht sich auf den Geschmackssinn.",correct:true,why:"Ja – gustatorisch = Geschmackssinn."},
+],
+w2s3:[
+{type:"REEL",title:"Ethik & Patientenautonomie",pts:["4 Prinzipien (Beauchamp & Childress): Autonomie · Benefizienz · Non-Malefizienz · Gerechtigkeit","PV: schriftlich + eigenhändig unterschrieben, gilt NUR bei Einwilligungsunfähigkeit","PRÜFUNGSFALLE: Angehörige haben KEINE automatische Entscheidungsbefugnis!"],q:"Welches Prinzip wird verletzt, wenn eine Maßnahme durchgeführt wird, obwohl sie schadet?",opts:["Autonomie","Benefizienz","Non-Malefizienz","Gerechtigkeit"],correct:2,why:"Non-Malefizienz = Nicht-Schaden-Prinzip: aktiv Schaden vermeiden."},
+{type:"MC",q:"Herr L. lehnt in seiner PV Beatmung ab. Jetzt ist er bewusstlos. Was gilt?",opts:["PV gilt nicht mehr","PV ist bindend – keine Beatmung","Angehörige entscheiden","Arzt entscheidet allein"],correct:1,why:"PV ist bei Einwilligungsunfähigkeit bindend. Sie gilt GENAU jetzt."},
+{type:"FILL",q:"Die ___ bevollmächtigt eine Vertrauensperson, Entscheidungen für den Patienten zu treffen.",answer:"Vorsorgevollmacht",why:"Vorsorgevollmacht (VV): Person X bevollmächtigt Person Y zu entscheiden, wenn X es nicht kann."},
+{type:"TF",q:"Angehörige haben automatisch das Recht, für einen einwilligungsunfähigen Patienten zu entscheiden.",correct:false,why:"NEIN! Angehörige haben KEINE automatische Entscheidungsbefugnis. Nur mit VV oder Betreuung!"},
+{type:"MC",q:"Frau S., 91 J., hat leichte Demenz, ist noch orientiert, lehnt ein Bad ab. Was tun Sie?",opts:["Waschen trotzdem","Ablehnung respektieren – sie ist noch einwilligungsfähig!","Angehörige entscheiden lassen","Arzt informieren"],correct:1,why:"Autonomieprinzip: leichte Demenz ≠ Einwilligungsunfähigkeit!"},
+{type:"TF",q:"Eine Patientenverfügung muss beim Notar beglaubigt werden.",correct:false,why:"FALSCH – kein Notar erforderlich! PV muss schriftlich + eigenhändig unterschrieben sein."},
+{type:"MC",q:"Ein ethisches Dilemma entsteht, wenn:",opts:["Zwei Prinzipien im Konflikt stehen","Patient eine klare Entscheidung trifft","PFK keine Zeit hat","Arzt eine Verordnung macht"],correct:0,why:"Dilemma: zwei ethische Prinzipien stehen im Konflikt. Keine Lösung erfüllt alle Prinzipien."},
+{type:"MC",q:"Welches Dokument schlägt dem Gericht einen Betreuer vor?",opts:["Patientenverfügung","Vorsorgevollmacht","Betreuungsverfügung","Behandlungsvertrag"],correct:2,why:"Betreuungsverfügung: schlägt dem Amtsgericht einen gewünschten Betreuer vor."},
+{type:"FILL",q:"Das Non-Malefizienz-Prinzip bedeutet 'Nicht-___'.",answer:"Schaden",why:"Non-Malefizienz = Nicht-Schaden. Eines der 4 Prinzipien nach Beauchamp & Childress."},
+{type:"TF",q:"Eine Patientenverfügung kann nur schriftlich widerrufen werden.",correct:false,why:"PV kann jederzeit widerrufen werden – auch MÜNDLICH und ohne Geschäftsfähigkeit."},
+],
+w2s4:[
+{type:"REEL",title:"Beratung & Motivierende Gesprächsführung",pts:["5 Schritte: Kontakt → Problemanalyse → Ziele (SMART) → Maßnahmen → Evaluation","OARS: Open questions · Affirm · Reflect (Spiegeln) · Summarize","4 Prinzipien MG: Empathie · Diskrepanz · Widerstand aufnehmen (nicht bekämpfen!) · Selbstwirksamkeit"],q:"Was bedeutet 'R' in OARS der Motivierenden Gesprächsführung?",opts:["Reaktion zeigen","Reflektieren (Spiegeln/Paraphrasieren)","Ressourcen aktivieren","Rückfragen stellen"],correct:1,why:"OARS: O=Open questions, A=Affirm, R=Reflect, S=Summarize."},
+{type:"MC",q:"Herr K., Diabetiker, lehnt Diät ab. Welche MG-Strategie hilft?",opts:["Ihn überzeugen","Direkt sagen was er tun muss","Diskrepanz aufzeigen: Ziel (gesund) vs. Verhalten","Thema wechseln"],correct:2,why:"Diskrepanz entwickeln: Bewusstsein für den Unterschied zwischen Zielen und aktuellem Verhalten."},
+{type:"FILL",q:"§___ SGB XI regelt den Anspruch auf individuelle Pflegeberatung.",answer:"7a",why:"§7a SGB XI: Anspruch auf individuelle Pflegeberatung durch Pflegestützpunkte."},
+{type:"TF",q:"Bei der Motivierenden Gesprächsführung soll Widerstand direkt bekämpft werden.",correct:false,why:"NEIN – Widerstand aufnehmen, nicht bekämpfen! Gegen ihn drücken verstärkt ihn."},
+{type:"MC",q:"In welchem Schritt wird geprüft ob das Beratungsziel erreicht wurde?",opts:["Schritt 1 – Kontakt","Schritt 3 – Ziele","Schritt 4 – Maßnahmen","Schritt 5 – Evaluation"],correct:3,why:"Schritt 5 = Evaluation: Wurde Beratungsziel erreicht?"},
+{type:"TF",q:"Offene Fragen beginnen mit 'Haben Sie...' oder 'Ist...'.",correct:false,why:"Offene Fragen beginnen mit W-Wörtern: 'Wie erleben Sie...', 'Was denken Sie...'."},
+{type:"MC",q:"Was bedeutet 'Affirm' (A) in OARS?",opts:["Anweisungen geben","Stärken und Ressourcen des Patienten bestätigen","Abschluss der Beratung","Abstinenz fördern"],correct:1,why:"Affirm = bestätigen, loben, Stärken benennen: 'Das machen Sie gut'."},
+{type:"MC",q:"Patientin: 'Ich weiß nicht, ob ich das schaffe.' Beste Antwort nach OARS?",opts:["'Das schaffen Sie schon!'","'Sie haben Ähnliches schon gemeistert.' (Affirm + Selbstwirksamkeit)","'Dann lassen wir das.'","'Sie müssen das schaffen.'"],correct:1,why:"Selbstwirksamkeit + Affirm: vergangene Erfolge nennen, Ressourcen aufzeigen."},
+{type:"FILL",q:"Im Beratungsprozess werden im 3. Schritt ___ formuliert.",answer:"Ziele",why:"Schritt 3: Ziele (SMART) formulieren. Nach Problemanalyse, vor Maßnahmen."},
+{type:"TF",q:"Motivierende Gesprächsführung ist besonders geeignet für Patienten mit Veränderungsambivalenz.",correct:true,why:"Ja – MG wurde für ambivalente Patienten entwickelt: will Veränderung, aber auch nicht."},
+],
+w3s1:[
+{type:"REEL",title:"6-R-Regel & ADME",pts:["6 R: Richtiger Patient · Richtiges Med. · Richtige Dosis · Richtiger Zeitpunkt · Richtiger Weg · Richtige Doku","WICHTIG: Dokumentation IMMER NACH der Gabe – niemals vorher!","ADME: Absorption · Distribution · Metabolismus (Leber) · Elimination (Niere)"],q:"Wann muss die Medikamentengabe dokumentiert werden?",opts:["Vor der Gabe","Gleichzeitig","Unmittelbar nach der Gabe","Am Ende der Schicht"],correct:2,why:"6-R: Richtige Dokumentation = IMMER NACH der Gabe. Niemals vorher!"},
+{type:"MC",q:"Welches Medikament hat ENGE therapeutische Breite und braucht besonderes Monitoring?",opts:["Paracetamol","Digitalis","Ibuprofen","Magnesium"],correct:1,why:"Digitalis: enge therapeutische Breite – Abstand zwischen Wirk- und Toxikdosis sehr gering."},
+{type:"FILL",q:"Das 'M' in ADME steht für ___, der hauptsächlich in der Leber stattfindet.",answer:"Metabolismus",why:"ADME: A=Absorption, D=Distribution, M=Metabolismus (Abbau), E=Elimination."},
+{type:"TF",q:"Bei der 6-R-Regel steht das erste R für 'Richtiges Medikament'.",correct:false,why:"Erstes R = Richtiger PATIENT! Identitätscheck zuerst (Name, Geburtstag, Armband)."},
+{type:"MC",q:"Herr K. hat Niereninsuffizienz. Was beachten Sie bei der Medikamentengabe?",opts:["Keine Besonderheiten","Dosisanpassung – Elimination über Niere gestört!","Doppelte Dosis","Nur orale Medikamente"],correct:1,why:"Bei Niereninsuffizienz: Medikamente kumulieren → Dosisanpassung erforderlich!"},
+{type:"TF",q:"Der First-Pass-Effekt erklärt, warum orale Dosen oft höher sind als intravenöse.",correct:true,why:"First-Pass: oral eingenommene Medikamente werden bei erster Leberpassage teilweise abgebaut."},
+{type:"MC",q:"PFK gibt Ibuprofen 400mg, obwohl 200mg verordnet. Welches R ist verletzt?",opts:["Richtiger Patient","Richtiges Medikament","Richtige Dosis","Richtiger Zeitpunkt"],correct:2,why:"Richtige Dosis (3. R): falsche Dosierung verletzt die 6-R-Regel."},
+{type:"MC",q:"Was versteht man unter 'Absorption' in der Pharmakokinetik?",opts:["Abbau in der Leber","Aufnahme des Wirkstoffs in die Blutbahn","Ausscheidung über Niere","Verteilung im Körper"],correct:1,why:"Absorption = Aufnahme des Wirkstoffs in die Blutbahn (Bioverfügbarkeit)."},
+{type:"FILL",q:"Die ___ beschreibt den Sicherheitsabstand zwischen wirksamer und toxischer Dosis.",answer:"therapeutische Breite",why:"Je enger die therapeutische Breite, desto gefährlicher (Digitalis, Lithium, Marcumar)."},
+{type:"TF",q:"Distribution beschreibt, wie ein Medikament im Körper verteilt wird.",correct:true,why:"Ja – Distribution = Verteilung des Wirkstoffs (Blut, Gewebe, Blut-Hirn-Schranke)."},
+],
+w3s2:[
+{type:"REEL",title:"Herzmedikamente – Pflegekritische Punkte",pts:["Digitalis: Puls MESSEN vor Gabe! HF <60/min → NICHT geben → Arzt! Enge therapeutische Breite!","Betablocker: NIE abrupt absetzen → Rebound-Krise (RR-Krise, Angina pectoris)!","ACE-Hemmer: Trockener Husten = typischer NW → dann ARB als Alternative"],q:"Frau B. soll Digoxin erhalten. Puls 54/min. Was tun Sie?",opts:["Geben – leichte Bradykardie ist normal","NICHT geben, Arzt informieren und dokumentieren","Dosis halbieren","In 1h nochmal messen"],correct:1,why:"Digitalis: Puls <60/min → NICHT geben! Sofort Arzt informieren, dokumentieren."},
+{type:"MC",q:"Welche NW ist TYPISCH für ACE-Hemmer?",opts:["Trockener Husten","Bradykardie","Gelbsehen","Hyperkaliämie allein"],correct:0,why:"ACE-Hemmer: typischster NW = trockener Reizhusten (Bradykinin-Akkumulation)."},
+{type:"FILL",q:"Betablocker dürfen nicht ___ abgesetzt werden, da sonst eine Rebound-Krise entstehen kann.",answer:"abrupt",why:"Abruptes Absetzen → Rebound: RR-Krise, Angina pectoris, Arrhythmien. Immer ausschleichen!"},
+{type:"TF",q:"Furosemid kann zu Hypokaliämie führen, weshalb Elektrolyte kontrolliert werden müssen.",correct:true,why:"Furosemid = Schleifendiuretikum → scheidet Kalium aus. Elektrolyte + Gewicht täglich!"},
+{type:"MC",q:"Herr T. klagt nach Digitalisgabe über Übelkeit und sieht alles gelblich. Was vermuten Sie?",opts:["Magengrippe","Digitalisintoxikation – sofort Arzt!","Normale NW","Nahrungsmittelallergie"],correct:1,why:"Gelbsehen + Übelkeit = Digitalisintoxikation! Sofort Arzt, Medikament stoppen."},
+{type:"TF",q:"ACE-Hemmer sind Medikamente der 1. Wahl bei Herzinsuffizienz.",correct:true,why:"Ja – ACE-Hemmer (z.B. Ramipril) reduzieren Nachlast und hemmen RAAS. Erstlinientherapie."},
+{type:"MC",q:"Welche Maßnahme ist bei Furosemid-Gabe besonders wichtig?",opts:["Puls messen vor Gabe","Tägliches Wiegen und Ein-/Ausfuhrbilanz","RR wöchentlich","Calcium kontrollieren"],correct:1,why:"Furosemid: täglich wiegen (Ödeme!), Ein-/Ausfuhrbilanz, Elektrolyte kontrollieren."},
+{type:"MC",q:"Was ist Carvedilol?",opts:["ACE-Hemmer","Schleifendiuretikum","Betablocker","Herzglykosid"],correct:2,why:"Carvedilol = nicht-selektiver Betablocker. Eingesetzt bei Herzinsuffizienz."},
+{type:"FILL",q:"Digitalis wirkt ___ chronotrop – es senkt die Herzfrequenz.",answer:"negativ",why:"Negativ chronotrop = HF senkend. Positiv inotrop = Kontraktionskraft steigernd."},
+{type:"TF",q:"Betablocker können bei Asthma bronchiale zu Bronchospasmus führen.",correct:true,why:"Ja – nicht-selektive Betablocker blockieren Beta-2 in der Lunge → Bronchospasmus. KI!"},
+],
+w3s3:[
+{type:"REEL",title:"Antikoagulantien – Überblick",pts:["Heparin UFH: sofort wirksam, Monitoring PTT (50–90s), Antidot PROTAMIN","Marcumar: Wirkung erst nach 3–5 Tagen! INR-Ziel: VHF/TVT 2–3, Kunstklappe 2,5–3,5","NOACs (Xarelto/Eliquis/Pradaxa): kein Routine-Monitoring – aber Nierenfunktion prüfen!"],q:"Frau A. nimmt Marcumar bei Vorhofflimmern. Welcher INR-Zielwert gilt?",opts:["1,0–1,5","2–3","3–4","4–5"],correct:1,why:"Marcumar bei VHF/TVT/LE: INR-Ziel 2–3."},
+{type:"MC",q:"Herr P. erhält Heparin i.v. Welcher Wert wird kontrolliert?",opts:["INR","PTT (Partielle Thromboplastinzeit)","Anti-Xa-Spiegel","HbA1c"],correct:1,why:"UFH: Monitoring über PTT. Ziel: 50–90 Sekunden."},
+{type:"FILL",q:"Das Antidot für unfraktioniertes Heparin ist ___.",answer:"Protamin",why:"Protamin neutralisiert Heparin. Bei Überdosierung: Protamin i.v."},
+{type:"TF",q:"Marcumar wirkt sofort nach der ersten Tablette.",correct:false,why:"FALSCH! Marcumar: Wirkungseintritt erst nach 3–5 Tagen. Überbrückung mit Heparin!"},
+{type:"MC",q:"Wie wird NMH (Clexane) korrekt injiziert?",opts:["I.v. als Bolus","I.m. in Oberschenkel","S.c. in Bauchfalte, 90°, Hautfalte halten, nicht nachreiben","Oral als Tablette"],correct:2,why:"NMH: s.c. in Bauchfalte, Hautfalte halten, 90°, langsam, NICHT nachreiben!"},
+{type:"TF",q:"Vitamin K ist das Antidot für Marcumar.",correct:true,why:"Ja – Marcumar = Vitamin-K-Antagonist. Antidot: Vitamin K. Notfall: PPSB."},
+{type:"MC",q:"Welches NOAC hat das Antidot Idarucizumab (Praxbind)?",opts:["Rivaroxaban (Xarelto)","Apixaban (Eliquis)","Dabigatran (Pradaxa)","Edoxaban"],correct:2,why:"Idarucizumab (Praxbind) = spezifisches Antidot für Dabigatran."},
+{type:"MC",q:"Warum muss bei Marcumar auf Vitamin-K-reiche Kost geachtet werden?",opts:["Vitamin K erhöht Blutungszeit","Vitamin K schwächt Marcumarwirkung ab → INR sinkt","Kombination ist toxisch","Kein Zusammenhang"],correct:1,why:"Viel Vitamin K (Spinat, Brokkoli) schwächt Wirkung → INR↓ → Thromboserisiko!"},
+{type:"FILL",q:"Bei NOACs ist kein routinemäßiges ___ nötig – aber Nierenfunktion regelmäßig prüfen.",answer:"Monitoring",why:"NOACs: kein Routine-INR/PTT. Aber: Nierenfunktion (GFR) regelmäßig kontrollieren."},
+{type:"TF",q:"Anti-Xa-Spiegel wird beim Monitoring von unfraktioniertem Heparin eingesetzt.",correct:false,why:"Anti-Xa = Monitoring von NMH. UFH → PTT. Nicht verwechseln!"},
+],
+w3s4:[
+{type:"REEL",title:"WHO-Schmerzschema",pts:["Stufe 1: Nicht-Opioide (NSAR, Paracetamol) | Stufe 2: Schwache Opioide | Stufe 3: Starke Opioide","PFLICHT bei Opioiden: IMMER Laxans verordnen! Obstipation bei 100% der Patienten!","ASS 100 mg/d = Prophylaxe | ASS 500 mg i.v. = Herzinfarkt-Notfall (UNTERSCHIED merken!)"],q:"Welche NW tritt bei ALLEN Patienten unter starken Opioiden auf?",opts:["Atemdepression","Obstipation","Übelkeit","Pruritus"],correct:1,why:"Obstipation = universelle Opioid-NW (100%). IMMER Laxans mitverordnen!"},
+{type:"MC",q:"Herr W. erhält Morphin. Was MUSS zusätzlich verordnet werden?",opts:["Antihistaminikum","Antiemetikum","Laxans gegen Obstipation","Protonenpumpenhemmer"],correct:2,why:"Laxans = PFLICHT bei Opioiden! Obstipation ist universal."},
+{type:"FILL",q:"Das Antidot bei Opioid-Atemdepression ist ___.",answer:"Naloxon",why:"Naloxon = Opioid-Antagonist. Bei Atemdepression sofort geben!"},
+{type:"TF",q:"ASS 100 mg/d wird zur Thrombozytenaggregationshemmung als tägliche Prophylaxe eingesetzt.",correct:true,why:"ASS 100 mg/d = Langzeitprophylaxe bei KHK, nach Herzinfarkt."},
+{type:"MC",q:"Auf welcher WHO-Stufe steht Tramadol?",opts:["Stufe 1","Stufe 2","Stufe 3","Koanalgetikum"],correct:1,why:"Tramadol = schwaches Opioid → WHO-Stufe 2."},
+{type:"TF",q:"NSAR (Ibuprofen) können Magenblutungen verursachen, weshalb PPI empfohlen wird.",correct:true,why:"NSAR hemmen Prostaglandine → Magenschleimhautschaden. Langzeittherapie: immer PPI dazu!"},
+{type:"MC",q:"Welche ASS-Dosis wird beim akuten Herzinfarkt gegeben?",opts:["100 mg oral","250 mg oral","500 mg i.v.","1000 mg oral"],correct:2,why:"Herzinfarkt-Notfall: ASS 500 mg i.v. ≠ Prophylaxe 100 mg/d!"},
+{type:"MC",q:"Paracetamol – was ist bei regelmäßiger Einnahme zu beachten?",opts:["Magenschutz","Max. 4g/d nicht überschreiten – Hepatotoxizität!","Puls messen","Auf Blutungszeichen achten"],correct:1,why:"Paracetamol: max. 4g/Tag. Überdosierung → Leberschaden!"},
+{type:"FILL",q:"Morphin, Oxycodon und Fentanyl sind ___ Opioide der WHO-Stufe 3.",answer:"starke",why:"WHO-Stufe 3 = starke Opioide: Morphin, Oxycodon, Hydromorphon, Fentanyl."},
+{type:"TF",q:"Bei WHO-Stufe-3-Opioiden muss die Atemfrequenz überwacht werden.",correct:true,why:"Ja – Atemdepression = schwerwiegende NW. AF + Bewusstsein regelmäßig überwachen!"},
+],
+w4s1:[
+{type:"REEL",title:"Schlaganfall – FAST & Bobath",pts:["FAST: Face (Mundwinkel?) · Arms (Arm absinken?) · Speech (Sprache?) · Time (sofort 112!)","Ischämisch (80%): Thrombolyse (rtPA) <4,5h nach Symptombeginn – CT zuerst!","Bobath: 24-Stunden-Konzept – betroffene Seite FÖRDERN, Umgebung dorthin ausrichten!"],q:"Herr L. hat hängenden Mundwinkel und undeutliche Sprache. Was zuerst?",opts:["Blutdruck messen","Sofort Notruf 112 – Verdacht Schlaganfall!","Wasser geben","Liegend abwarten"],correct:1,why:"FAST: Schlaganfall-Zeichen → sofort 112! Time is Brain – jede Minute zählt."},
+{type:"MC",q:"Was ist beim Bobath-Konzept nach Schlaganfall besonders wichtig?",opts:["Gesunde Seite trainieren","Betroffene Seite fördern und ansprechen","Bettruhe in ersten Wochen","Nur passive Übungen"],correct:1,why:"Bobath: betroffene Seite FÖRDERN. Nachttisch/TV/Ansprache zur betroffenen Seite!"},
+{type:"FILL",q:"Die Thrombolyse muss innerhalb von ___ Stunden nach Symptombeginn erfolgen.",answer:"4,5",why:"Thrombolyse-Zeitfenster: <4,5 Stunden. Danach steigt Blutungsrisiko stark."},
+{type:"TF",q:"Bei einem hämorrhagischen Schlaganfall ist Thrombolyse die Therapie der Wahl.",correct:false,why:"NEIN! Hämorrhagisch = Blutung. Thrombolyse würde Blutung verstärken!"},
+{type:"MC",q:"Frau R. hatte Schlaganfall links, Hemiparese rechts. Wohin wird der Nachttisch gestellt?",opts:["Links (gesunde Seite)","Rechts (betroffene Seite) – nach Bobath!","Mittig","Egal"],correct:1,why:"Bobath: Nachttisch, Ansprache, TV zur BETROFFENEN Seite."},
+{type:"TF",q:"Das Bobath-Konzept gilt für alle Alltagshandlungen (Lagerung, Transfer, Waschen).",correct:true,why:"Ja – Bobath ist 24-Stunden-Konzept: alle Handlungen nach Bobath-Prinzip."},
+{type:"MC",q:"Was ist Neglect nach Schlaganfall?",opts:["Sprachstörung","Lähmung der betroffenen Seite","Patient ignoriert betroffene Seite – Wahrnehmungsstörung","Schluckstörung"],correct:2,why:"Neglect: Patient nimmt die betroffene Körper-/Raumseite nicht wahr."},
+{type:"MC",q:"Welches Symptom ist KEIN typisches Schlaganfall-Zeichen?",opts:["Plötzliche Hemiparese","Plötzliche Aphasie","Schleichend zunehmende Kurzatmigkeit","Plötzliche Sehstörung"],correct:2,why:"Schlaganfall = plötzlicher Beginn! Schleichende Kurzatmigkeit ist kein typisches Zeichen."},
+{type:"FILL",q:"Das 'F' im FAST-Schema steht für ___ – ein hängender Mundwinkel ist ein Zeichen.",answer:"Face",why:"FAST: F=Face, A=Arms, S=Speech, T=Time (sofort 112!)."},
+{type:"TF",q:"Dysphagie (Schluckstörung) ist eine häufige Komplikation nach Schlaganfall.",correct:true,why:"Ja – Dysphagie bei 40–70% der Schlaganfallpatienten. Aspirationsgefahr! Logopädie!"},
+],
+w4s2:[
+{type:"REEL",title:"Parkinson & Multiple Sklerose",pts:["TRAP: Tremor · Rigor (Zahnradphänomen) · Akinese/Bradykinese · Posturale Instabilität (Sturzgefahr!)","Parkinson: Medikamente PÜNKTLICH geben – kein On-Off-Phänomen provozieren!","MS: Fatigue = zentrales Symptom | Uthoff-Phänomen: Wärme verschlechtert ALLE Symptome!"],q:"Was ist das Uthoff-Phänomen?",opts:["Plötzliche Lähmung bei MS","Verschlechterung aller MS-Symptome durch Wärme","Sehstörung bei Dunkelheit","Tremor bei Bewegung"],correct:1,why:"Uthoff-Phänomen: Wärme (Sonnenbad, heißes Bad, Fieber) → alle MS-Symptome schlimmer."},
+{type:"MC",q:"Was ist das 'Zahnradphänomen' bei Parkinson?",opts:["Unwillkürliche Drehbewegung","Ruckartige Widerstände bei passiver Bewegung (Rigor)","Gleichgewichtsstörung","Zittern in Ruhe"],correct:1,why:"Zahnradphänomen = Rigor: bei passiver Bewegung ruckartige Widerstände."},
+{type:"FILL",q:"Das 'T' in TRAP bei Parkinson steht für ___.",answer:"Tremor",why:"TRAP: T=Tremor (Ruhetremor 4–6Hz), R=Rigor, A=Akinese, P=Posturale Instabilität."},
+{type:"TF",q:"MS-Fatigue kann durch ausreichend Schlaf behoben werden.",correct:false,why:"NEIN – MS-Fatigue ist ein neurologisches Symptom, nicht durch Schlaf besserbar."},
+{type:"MC",q:"Was ist bei Parkinson-Medikamentengabe besonders wichtig?",opts:["Nach dem Essen geben","Zur exakt gleichen Zeit geben – kein On-Off provozieren!","Nach Bedarf geben","Mit Milch nehmen"],correct:1,why:"Parkinson-Medikamente PÜNKTLICH! Verspätung → On-Off-Phänomen."},
+{type:"TF",q:"Mikrographie (sehr kleine Handschrift) ist ein Symptom bei Parkinson.",correct:true,why:"Ja – Mikrographie: Handschrift wird kleiner und unleserlicher. Teil der Bradykinese."},
+{type:"MC",q:"Bester pflegerischer Ansatz bei MS-Fatigue?",opts:["Maximale Belastung","Pacing: Aktivitäten und Ruhe abwechseln","Bettruhe","Alle Aktivitäten vermeiden"],correct:1,why:"Pacing = Energiemanagement: Aktivitäten planen, Pausen einbauen."},
+{type:"MC",q:"Hypomimie bei Parkinson bedeutet:",opts:["Übermäßige Mimik","Ausdrucksarmes Gesicht (Maskengesicht)","Zittern des Gesichts","Gesichtslähmung"],correct:1,why:"Hypomimie = Maskengesicht: reduzierte Mimik durch Bradykinese der Gesichtsmuskeln."},
+{type:"FILL",q:"Das On-Off-Phänomen beschreibt den plötzlichen Wechsel zwischen ___ und Wirklosigkeit.",answer:"Wirkung",why:"On = gute Medikamentenwirkung, Off = plötzlicher Verlust. Pünktliche Gabe minimiert das."},
+{type:"TF",q:"Multiple Sklerose ist eine Autoimmunerkrankung mit Demyelinisierung im ZNS.",correct:true,why:"Ja – MS: Immunsystem greift Myelinscheiden im ZNS an → Demyelinisierung."},
+],
+w4s3:[
+{type:"REEL",title:"Demenz & Epilepsie",pts:["Demenz: Biographiearbeit · Milieutherapie · Validation · NICHT korrigieren!","Epilepsie-Sofortmaßnahmen: Umgebung sichern · NICHTS in den Mund! · Stabile Seitenlage danach","PRÜFUNGSFALLE: Angehörige haben keine autom. Entscheidungsbefugnis – auch bei Demenz!"],q:"Herr M. hat Epilepsie. Er hat gerade einen Anfall. Was ist verboten?",opts:["Uhrzeit notieren","Etwas in den Mund stecken","Umgebung sichern","Stabile Seitenlage vorbereiten"],correct:1,why:"NIEMALS etwas in den Mund! Verletzungs- und Aspirationsgefahr!"},
+{type:"MC",q:"Was unterscheidet Alzheimer von vaskulärer Demenz im Verlauf?",opts:["Alzheimer stufenweise, vaskuläre stetig","Alzheimer stetig-progredient, vaskuläre stufenweise","Kein Unterschied","Alzheimer beginnt mit Gangstörungen"],correct:1,why:"Alzheimer: stetig progredient. Vaskuläre Demenz: stufenweise (nach kleinen Infarkten)."},
+{type:"FILL",q:"Bei der Biographiearbeit wird die ___ des Patienten als Ressource genutzt.",answer:"Lebensgeschichte",why:"Biographiearbeit: persönliche Lebensgeschichte, Erinnerungen, Gewohnheiten."},
+{type:"TF",q:"Extremitäten des Patienten sollen bei Epilepsieanfall festgehalten werden.",correct:false,why:"NEIN – Extremitäten NICHT festhalten! Verletzungsgefahr. Nur Umgebung sichern."},
+{type:"MC",q:"Frau K. mit Alzheimer sagt: 'Ich muss Kinder abholen.' Was tun?",opts:["Korrigieren: 'Ihre Kinder sind erwachsen'","Ignorieren","Validieren: 'Sie machen sich Sorgen um Ihre Kinder'","Thema wechseln"],correct:2,why:"Validation: Gefühle spiegeln, NICHT korrigieren."},
+{type:"TF",q:"Anfallsdauer >5 Minuten gilt als Status epilepticus – ein Notfall.",correct:true,why:"Status epilepticus: >5 Minuten ODER 2 Anfälle ohne Erholung. NOTFALL!"},
+{type:"MC",q:"Was ist Milieutherapie bei Demenz?",opts:["Medikamentöse Therapie","Vertraute, sichere Umgebung mit Orientierungshilfen (Uhr, Kalender, Fotos)","Physikalische Therapie","Gruppentherapie"],correct:1,why:"Milieutherapie: vertraute Umgebung gestalten. Orientierungshilfen, stabile Routinen."},
+{type:"MC",q:"Risikofaktoren für vaskuläre Demenz sind:",opts:["Genetik allein","Hypertonie, Diabetes, Vorhofflimmern – kardiovask. RF","Nur Vitamin-D-Mangel","Übergewicht allein"],correct:1,why:"Vaskuläre Demenz: kardiovaskuläre RF → kleine Schlaganfälle → stufenweise Verschlechterung."},
+{type:"FILL",q:"Nach einem epileptischen Anfall wird der Patient in ___ gelegt.",answer:"stabile Seitenlage",why:"Stabile Seitenlage = Aspirationsschutz!"},
+{type:"TF",q:"Bei leichter Demenz ist Einwilligungsfähigkeit automatisch aufgehoben.",correct:false,why:"NEIN! Leichte Demenz ≠ Einwilligungsunfähigkeit. Immer individuell prüfen!"},
+],
+w4s4:[
+{type:"REEL",title:"Depression & Sucht",pts:["Depression: 3 Hauptsymptome – gedrückte Stimmung · Interessenverlust (Anhedonie) · Antriebsminderung","Suizid: DIREKT ansprechen! Niemals bagatellisieren, aufheitern oder alleine lassen!","CAGE ≥2 positiv = Alkohol-Screening-Verdacht | Delirium tremens = LEBENSBEDROHLICH!"],q:"Herr R. sagt: 'Ich denke manchmal daran, nicht mehr da zu sein.' Was tun Sie?",opts:["Nichts – er meint es nicht ernst","Direkt ansprechen: 'Haben Sie Gedanken, sich das Leben zu nehmen?'","Nur Arzt informieren","Beruhigen: 'Das geht vorbei'"],correct:1,why:"Suizidprävention: DIREKT und klar ansprechen. Das verstärkt Gedanken NICHT. Bei ihm bleiben!"},
+{type:"MC",q:"Was bedeutet 'C' im CAGE-Fragebogen?",opts:["Craving (Verlangen)","Cut (Wunsch, weniger zu trinken)","Careless (sorglos)","Continuous (täglich)"],correct:1,why:"CAGE: C=Cut, A=Annoyed, G=Guilty, E=Eye-opener. ≥2 = Verdacht!"},
+{type:"FILL",q:"Delirium tremens ist eine lebensbedrohliche Komplikation des ___.",answer:"Alkoholentzugs",why:"Delirium tremens: Halluzinationen, Krampfanfälle bei schwerem Alkoholentzug. NOTFALL!"},
+{type:"TF",q:"Suizidgedanken anzusprechen verstärkt diese – deshalb vermeiden.",correct:false,why:"FALSCH – direktes Ansprechen verstärkt Gedanken NICHT. Es zeigt Interesse und kann Leben retten!"},
+{type:"MC",q:"Welche 3 Hauptsymptome hat eine Depression?",opts:["Schlafstörung, Appetitlosigkeit, Rückzug","Gedrückte Stimmung, Interessenverlust, Antriebsminderung","Angst, Panik, Tachykardie","Wahnideen, Halluzinationen, Konfusion"],correct:1,why:"Hauptsymptome: gedrückte Stimmung + Interessenverlust (Anhedonie) + Antriebsminderung."},
+{type:"TF",q:"Alkoholentzug kann zu Tremor, Schwitzen, Tachykardie und Angstzuständen führen.",correct:true,why:"Ja – typische Entzugssymptome. Schwerste Form: Delirium tremens."},
+{type:"MC",q:"Patientin: 'Das Leben hat keinen Sinn mehr.' Wie reagieren?",opts:["'Stellen Sie sich nicht so an!'","'Das kenne ich, das geht vorbei.'","Suizidgedanken direkt ansprechen und bei ihr bleiben","'Denken Sie an Ihre Familie!'"],correct:2,why:"Direkt ansprechen, bei ihr bleiben, ernst nehmen. NICHT bagatellisieren oder alleine lassen."},
+{type:"MC",q:"Was ist Anhedonie?",opts:["Übermäßige Freude","Unfähigkeit, Freude zu empfinden (Interessenverlust)","Antriebssteigerung","Schlafstörung"],correct:1,why:"Anhedonie = Freudlosigkeit. Eines der 3 Hauptsymptome der Depression."},
+{type:"FILL",q:"Im CAGE-Fragebogen steht 'E' für ___ – Alkohol morgens als Stimmungsregulator.",answer:"Eye-opener",why:"E=Eye-opener: morgens Alkohol trinken – starkes Zeichen für Abhängigkeit."},
+{type:"TF",q:"Antidepressiva wirken sofort ab der ersten Dosis.",correct:false,why:"Wirkungseintritt nach 2–4 Wochen! Patienten informieren, damit sie Therapie nicht abbrechen."},
+],
+w5s1:[
+{type:"REEL",title:"Rechtliche Grundlagen",pts:["§4 PflBG: 5 vorbehaltene Tätigkeiten – NUR Pflegefachkräfte, NICHT delegierbar!","Schweigepflicht §203 StGB: gilt gegenüber ALLEN – auch Angehörigen und Freunden!","'Was nicht dokumentiert ist, gilt als nicht getan.' – Doku = Beweismittel!"],q:"Was ist eine vorbehaltene Tätigkeit nach §4 PflBG?",opts:["Vitalzeichen messen","Planung und Steuerung des Pflegeprozesses","Patient waschen","Mahlzeit anreichen"],correct:1,why:"Planung und Steuerung des Pflegeprozesses ist vorbehaltene Tätigkeit – nur für Pflegefachkräfte!"},
+{type:"MC",q:"Tochter fragt am Telefon nach Diagnose des Vaters. Was antworten Sie?",opts:["Alle Diagnosen nennen","Keine Auskunft – §203 StGB gilt auch gegenüber Angehörigen!","Allgemeine Infos geben","Zur Stationsleitung verbinden"],correct:1,why:"§203 StGB: Schweigepflicht gilt AUCH gegenüber Angehörigen! Nur mit Patientenerlaubnis."},
+{type:"FILL",q:"Fehler in der Pflegedokumentation: einmal durchstreichen + ___ + ___.",answer:"Kürzel, Datum",why:"Korrekte Fehlerkorrektur: einmal durchstreichen (leserlich!), Kürzel + Datum. NIEMALS Tipp-Ex!"},
+{type:"TF",q:"Vorbehaltene Tätigkeiten nach §4 PflBG können an Pflegehilfskräfte delegiert werden.",correct:false,why:"NEIN! Vorbehaltene Tätigkeiten dürfen NICHT delegiert werden."},
+{type:"MC",q:"Patient stürzt wegen fehlender Prophylaxe. Welche Haftung droht der Pflegekraft?",opts:["Nur moralische Verantwortung","§823 BGB – zivilrechtliche Haftung (Schadensersatz)","Keine Haftung","Nur Berufsrecht"],correct:1,why:"§823 BGB: zivilrechtlich bei nachgewiesenem Fehler. Zusätzlich §229 StGB möglich."},
+{type:"TF",q:"Jede Pflegemaßnahme muss zeitnah und vollständig dokumentiert werden.",correct:true,why:"Ja – Dokumentation ist Rechtspflicht: zeitnah, vollständig, leserlich, nachvollziehbar."},
+{type:"MC",q:"Wie viele vorbehaltene Tätigkeiten definiert §4 PflBG?",opts:["3","4","5","7"],correct:2,why:"§4 PflBG definiert FÜNF vorbehaltene Tätigkeiten."},
+{type:"MC",q:"Patient verbietet Auskunft an Familie. Was gilt?",opts:["Wunsch kann ignoriert werden","Patientenwunsch ist bindend – Schweigepflicht!","Nur Arzt entscheidet","Nächste Angehörige dürfen informiert werden"],correct:1,why:"Schweigepflicht §203: Patientenwunsch bindend."},
+{type:"FILL",q:"§___ StGB regelt die Schweigepflicht für Pflegefachkräfte.",answer:"203",why:"§203 StGB = Verletzung von Privatgeheimnissen. Gilt für alle Heilberufe."},
+{type:"TF",q:"Ohne PV und VV bestellt das Amtsgericht einen gesetzlichen Betreuer.",correct:true,why:"Ja – ohne PV/VV: Amtsgericht bestellt Betreuer."},
+],
+w5s2:[
+{type:"REEL",title:"Ottawa-Charta & Salutogenese",pts:["Ottawa 1986: 5 Strategien – Gesamtpolitik · Lebenswelten · Gemeinschaft · Kompetenzen · Gesundheitsdienste","Salutogenese (Antonovsky): Was hält gesund? SOC = Verstehbarkeit + Handhabbarkeit + Sinnhaftigkeit","Prävention: Primär (vorher) · Sekundär (Früherkennung) · Tertiär (Rückfall verhüten)"],q:"Was sind die 3 Komponenten des Kohärenzgefühls (SOC)?",opts:["Gesundheit, Wohlbefinden, Qualität","Verstehbarkeit, Handhabbarkeit, Sinnhaftigkeit","Primär, Sekundär, Tertiär","Prävention, Behandlung, Reha"],correct:1,why:"SOC: Verstehbarkeit + Handhabbarkeit + Sinnhaftigkeit (nach Antonovsky)."},
+{type:"MC",q:"Eine Impfkampagne zur Grippeprophylaxe ist welche Prävention?",opts:["Sekundäre","Tertiäre","Primäre","Palliative"],correct:2,why:"Primäre Prävention: verhindert Entstehung VOR Auftreten der Krankheit."},
+{type:"FILL",q:"Die Ottawa-Charta wurde im Jahr ___ von der WHO verabschiedet.",answer:"1986",why:"Ottawa-Charta 1986 – Meilenstein der globalen Gesundheitsförderung."},
+{type:"TF",q:"Salutogenese fragt: Was macht Menschen krank? (Pathogenese-Frage)",correct:false,why:"Salutogenese = Was erhält Menschen GESUND? Pathogenese = Was macht krank?"},
+{type:"MC",q:"Mammographie-Screening ist welche Präventionsebene?",opts:["Primär","Sekundär","Tertiär","Quartär"],correct:1,why:"Sekundäre Prävention = Früherkennung (Krankheit asymptomatisch, früh erkannt)."},
+{type:"TF",q:"'Gesundheitsfördernde Lebenswelten schaffen' ist eine Ottawa-Strategie.",correct:true,why:"Ja – Ottawa Strategie 2: Gesundheitsfördernde Lebenswelten (Schule, Betrieb, Krankenhaus)."},
+{type:"MC",q:"Was ist tertiäre Prävention?",opts:["Erkrankung verhindern","Früherkennung","Rückfall verhüten + Rehabilitation","Palliativbegleitung"],correct:2,why:"Tertiär = nach Erkrankung: Rückfallverhütung, Rehabilitation."},
+{type:"MC",q:"Welche Ottawa-Strategie meint 'Einzelpersonen in Gesundheitskompetenz stärken'?",opts:["Gesamtpolitik","Gemeinschaftsaktionen","Persönliche Kompetenzen entwickeln","Gesundheitsdienste neu orientieren"],correct:2,why:"Ottawa Strategie 4: Persönliche Kompetenzen = Gesundheitsbildung, Empowerment."},
+{type:"FILL",q:"Das Gegenteil der Salutogenese ist die ___, die fragt was Menschen krank macht.",answer:"Pathogenese",why:"Pathogenese = traditionelle Medizin (Was macht krank?)."},
+{type:"TF",q:"Generalisierte Widerstandsressourcen umfassen z.B. soziale Unterstützung, Bildung und Geld.",correct:true,why:"Ja – generalisierte Widerstandsressourcen helfen Stressoren zu bewältigen."},
+],
+w5s3:[
+{type:"REEL",title:"SBAR & Interprofessionalität",pts:["SBAR: Situation · Background · Assessment (eigene Einschätzung!) · Recommendation","Delegation: nur an GEEIGNETE Person · Kontrolle verbleibt beim Delegierenden · §4 PflBG NICHT delegierbar!","Logopäde bei Dysphagie! Ergotherapeut ADL-Training! Physio Mobilisation!"],q:"Welches SBAR-Element enthält Ihre eigene pflegefachliche Einschätzung?",opts:["S – Situation","B – Background","A – Assessment","R – Recommendation"],correct:2,why:"A = Assessment: Ihre eigene pflegefachliche Beurteilung. 'Ich schätze ein, dass...'"},
+{type:"MC",q:"Patient hat nach Schlaganfall Dysphagie. Welche Berufsgruppe ist zwingend einzubeziehen?",opts:["Physiotherapeut","Logopäde","Ergotherapeut","Sozialarbeiter"],correct:1,why:"Logopäde: zuständig für Schlucktherapie. Bei Dysphagie: Logopädie essentiell!"},
+{type:"FILL",q:"Das 'R' im SBAR-Schema steht für ___ – was als nächstes getan werden soll.",answer:"Recommendation",why:"R=Recommendation: Empfehlung/Handlungsvorschlag. Abschluss der SBAR-Übergabe."},
+{type:"TF",q:"Wer eine Aufgabe delegiert ist nicht mehr verantwortlich für die Ausführung.",correct:false,why:"NEIN! Organisations- und Aufsichtsverantwortung verbleibt beim Delegierenden."},
+{type:"MC",q:"Was ist die Aufgabe des Ergotherapeuten?",opts:["Sprach- und Schlucktherapie","ADL-Training und Hilfsmittelanpassung","Atemtherapie und Mobilisation","Soziale Beratung"],correct:1,why:"Ergotherapeut: ADL-Training, Hilfsmittelanpassung, Alltagskompetenzen."},
+{type:"TF",q:"§4 PflBG-Tätigkeiten können nicht an Hilfspersonen delegiert werden.",correct:true,why:"Ja – vorbehaltene Tätigkeiten sind exklusiv für Pflegefachkräfte. Keine Delegation möglich."},
+{type:"MC",q:"Was muss bei Delegation dokumentiert werden?",opts:["Nichts – mündlich reicht","Was, an wen, wann und warum delegiert","Nur das Ergebnis","Nur Name der delegierenden Person"],correct:1,why:"Delegation dokumentieren: Was? An wen? Wann? Warum? – Rechtssicherheit für alle."},
+{type:"MC",q:"Wer ist zuständig für Entlassungsplanung und soziale Beratung?",opts:["Ergotherapeut","Logopäde","Physiotherapeut","Sozialarbeiter"],correct:3,why:"Sozialarbeiter: Entlassungsplanung, soziale Beratung, Nachsorge, Anträge."},
+{type:"FILL",q:"Das 'B' im SBAR-Schema steht für ___ – klinischer Hintergrund des Patienten.",answer:"Background",why:"B=Background: Diagnosen, Vorgeschichte, aktuelle Medikamente."},
+{type:"TF",q:"Entlassungsmanagement soll erst am Entlassungstag beginnen.",correct:false,why:"NEIN – Entlassungsmanagement FRÜHZEITIG beginnen! Bereits bei Aufnahme planen."},
+],
+};
+
+const WEEKS=[
+{id:1,title:"Pflegegrundlagen",emoji:"📋",hex:"#10B981",desc:"Pflegeprozess · ABEDL · SIS · Theorien · Skalen · Prophylaxen",
+stages:[{id:"w1s1",title:"Pflegeprozess",icon:"🔄"},{id:"w1s2",title:"ABEDL & SIS",icon:"📝"},{id:"w1s3",title:"Pflegetheorien",icon:"📚"},{id:"w1s4",title:"Assessment-Skalen",icon:"📊"},{id:"w1s5",title:"Prophylaxen",icon:"🛡️"}]},
+{id:2,title:"Kommunikation & Ethik",emoji:"💬",hex:"#3B82F6",desc:"Watzlawick · 4-Ohren · Validation · Basale Stimulation · Ethik · Beratung",
+stages:[{id:"w2s1",title:"Kommunikationsmodelle",icon:"👂"},{id:"w2s2",title:"Validation & Basale Stimulation",icon:"🤝"},{id:"w2s3",title:"Ethik & Patientenautonomie",icon:"⚖️"},{id:"w2s4",title:"Beratung & Schulung",icon:"🎓"}]},
+{id:3,title:"Pharmakologie",emoji:"💊",hex:"#F59E0B",desc:"6-R-Regel · Herzmedikamente · Antikoagulantien · WHO-Schmerz",
+stages:[{id:"w3s1",title:"6-R-Regel & Pharmakokinetik",icon:"✅"},{id:"w3s2",title:"Herzmedikamente & Diuretika",icon:"❤️"},{id:"w3s3",title:"Antikoagulantien",icon:"🩸"},{id:"w3s4",title:"WHO-Schmerzschema",icon:"😮‍💨"}]},
+{id:4,title:"Neurologie & Psychiatrie",emoji:"🧠",hex:"#8B5CF6",desc:"Schlaganfall · Parkinson · MS · Demenz · Epilepsie · Depression · Sucht",
+stages:[{id:"w4s1",title:"Schlaganfall & Bobath",icon:"⚡"},{id:"w4s2",title:"Parkinson & MS",icon:"🚶"},{id:"w4s3",title:"Demenz & Epilepsie",icon:"🧩"},{id:"w4s4",title:"Depression & Sucht",icon:"💙"}]},
+{id:5,title:"Recht & Prävention",emoji:"⚖️",hex:"#EF4444",desc:"PflBG §4 · Haftung · Dokumentation · Ottawa · Salutogenese · SBAR",
+stages:[{id:"w5s1",title:"Rechtliche Grundlagen",icon:"📜"},{id:"w5s2",title:"Ottawa & Salutogenese",icon:"🌱"},{id:"w5s3",title:"SBAR & Delegation",icon:"🤲"}]},
+];
+
+function getQs(id){const p=POOLS[id];if(!p)return[];const r=p[0];return[r,...shuffle(p.slice(1))].slice(0,7);}
+
+const SK="pflege-v7";
+function load(){try{const r=localStorage.getItem(SK);return r?JSON.parse(r):{done:[],xp:0};}catch{return{done:[],xp:0};}}
+function save(d,x){try{localStorage.setItem(SK,JSON.stringify({done:[...d],xp:x}));}catch{}}
+
+// ── Components ───────────────────────────────────────────────────────────────
+function HomeScreen({done,xp,onStart,onReset,onExport,onImport}){
+  const total=WEEKS.reduce((a,w)=>a+w.stages.length,0);
+  const td=WEEKS.reduce((a,w)=>a+w.stages.filter(s=>done.has(s.id)).length,0);
+  const fr=useRef();
+  return React.createElement('div',{style:{minHeight:"100dvh",background:D.bg,color:D.text}},
+    // Header
+    React.createElement('div',{style:{background:D.surface,borderBottom:`1px solid ${D.border}`,padding:"12px 16px",position:"sticky",top:0,zIndex:10}},
+      React.createElement('div',{style:{maxWidth:540,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        React.createElement('div',null,
+          React.createElement('div',{style:{fontSize:18,fontWeight:800}},"🏥 PflegeTrainer"),
+          React.createElement('div',{style:{fontSize:10,color:D.muted}},"Saarland 2026 · KB I–V · Offline")
+        ),
+        React.createElement('div',{style:{display:"flex",gap:8,alignItems:"center"}},
+          React.createElement('button',{onClick:onExport,title:"Exportieren",style:{background:D.surface2,border:`1px solid ${D.border}`,borderRadius:8,padding:"6px 10px",color:D.muted,cursor:"pointer",fontSize:13}},"⬇️"),
+          React.createElement('button',{onClick:()=>fr.current.click(),title:"Importieren",style:{background:D.surface2,border:`1px solid ${D.border}`,borderRadius:8,padding:"6px 10px",color:D.muted,cursor:"pointer",fontSize:13}},"⬆️"),
+          React.createElement('input',{ref:fr,type:"file",accept:".json",style:{display:"none"},onChange:e=>onImport(e.target.files[0])}),
+          React.createElement('div',{style:{background:D.surface2,borderRadius:20,padding:"6px 12px",display:"flex",alignItems:"center",gap:5,border:`1px solid ${D.border}`}},
+            React.createElement('span',{style:{fontSize:14}},"⭐"),
+            React.createElement('span',{style:{fontWeight:800,fontSize:15,color:D.amber}},xp)
+          )
+        )
+      )
+    ),
+    // Body
+    React.createElement('div',{style:{maxWidth:540,margin:"0 auto",padding:"14px 14px 60px"}},
+      // Progress bar
+      React.createElement('div',{style:{background:D.surface,borderRadius:12,padding:"12px 16px",marginBottom:20,border:`1px solid ${D.border}`,display:"flex",alignItems:"center",gap:14}},
+        React.createElement('div',{style:{flex:1}},
+          React.createElement('div',{style:{fontSize:12,color:D.muted,marginBottom:6}},"Gesamtfortschritt"),
+          React.createElement('div',{style:{height:7,background:D.surface2,borderRadius:4}},
+            React.createElement('div',{style:{height:7,borderRadius:4,background:D.green,width:`${(td/total)*100}%`,transition:"width 0.6s"}})
+          )
+        ),
+        React.createElement('div',{style:{textAlign:"right"}},
+          React.createElement('div',{style:{fontWeight:800,fontSize:20,color:D.green}},`${td}/${total}`),
+          React.createElement('div',{style:{fontSize:10,color:D.muted}},"Stages")
+        )
+      ),
+      // Weeks
+      ...WEEKS.map(week=>{
+        const wd=week.stages.filter(s=>done.has(s.id)).length;
+        return React.createElement('div',{key:week.id,style:{marginBottom:24}},
+          React.createElement('div',{style:{background:D.surface,borderRadius:14,padding:"13px 15px",marginBottom:8,border:`1.5px solid ${week.hex}30`}},
+            React.createElement('div',{style:{display:"flex",alignItems:"center",gap:10}},
+              React.createElement('span',{style:{fontSize:24}},week.emoji),
+              React.createElement('div',{style:{flex:1}},
+                React.createElement('div',{style:{fontWeight:700,fontSize:14}},`W${week.id}: ${week.title}`),
+                React.createElement('div',{style:{fontSize:11,color:D.muted,marginTop:1}},week.desc)
+              ),
+              React.createElement('span',{style:{fontWeight:800,fontSize:14,color:week.hex}},`${wd}/${week.stages.length}`)
+            ),
+            React.createElement('div',{style:{height:4,background:D.surface2,borderRadius:2,marginTop:10}},
+              React.createElement('div',{style:{height:4,borderRadius:2,background:week.hex,width:`${(wd/week.stages.length)*100}%`,transition:"width 0.6s"}})
+            )
+          ),
+          ...week.stages.map(stage=>{
+            const isDone=done.has(stage.id);
+            return React.createElement('button',{key:stage.id,onClick:()=>onStart(stage),style:{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",background:isDone?`${week.hex}12`:D.surface,border:`1.5px solid ${isDone?week.hex:D.border}`,borderRadius:12,cursor:"pointer",textAlign:"left",width:"100%",marginBottom:6,color:D.text}},
+              React.createElement('div',{style:{width:40,height:40,borderRadius:10,background:isDone?`${week.hex}20`:D.surface2,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}},isDone?"✅":stage.icon),
+              React.createElement('div',{style:{flex:1}},
+                React.createElement('div',{style:{fontWeight:600,fontSize:14}},stage.title),
+                React.createElement('div',{style:{fontSize:11,color:isDone?week.hex:D.muted,marginTop:2}},isDone?"✓ Abgeschlossen · Nochmal üben":"Tippen zum Starten →")
+              )
+            );
+          })
+        );
+      }),
+      React.createElement('div',{style:{textAlign:"center",paddingTop:16,borderTop:`1px solid ${D.border}`}},
+        React.createElement('div',{style:{color:D.dimmed,fontSize:11,marginBottom:10}},"📅 Klausur 1.–3. Juli · Praktisch 31. Juli · Mündlich 15. September 2026"),
+        React.createElement('button',{onClick:onReset,style:{background:"none",border:`1px solid ${D.border}`,color:D.dimmed,fontSize:11,cursor:"pointer",padding:"5px 10px",borderRadius:7}},"🔄 Fortschritt zurücksetzen")
+      )
+    )
+  );
+}
+
+function ReelCard({q,onDone}){
+  return React.createElement('div',null,
+    React.createElement('div',{style:{fontSize:11,color:D.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}},"📖 Merkkarte · Lesen & merken"),
+    React.createElement('div',{style:{background:D.surface,borderRadius:18,padding:20,border:`2px solid ${D.border}`,marginBottom:14}},
+      React.createElement('div',{style:{fontSize:15,fontWeight:700,marginBottom:16}},q.title),
+      ...q.pts.map((pt,i)=>React.createElement('div',{key:i,style:{display:"flex",gap:10,marginBottom:13,alignItems:"flex-start"}},
+        React.createElement('div',{style:{width:24,height:24,borderRadius:7,background:`${D.green}22`,color:D.green,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,flexShrink:0}},i+1),
+        React.createElement('div',{style:{color:"#CBD5E1",lineHeight:1.6,fontSize:14}},pt)
+      ))
+    ),
+    React.createElement('button',{onClick:onDone,style:sBtn(D.green)},"Verstanden → Kontrollfrage")
+  );
+}
+
+function MCView({q,ans,onAnswer,label}){
+  return React.createElement('div',null,
+    React.createElement('div',{style:{fontSize:11,color:D.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}},label||"🎯 Multiple Choice"),
+    React.createElement('div',{style:{fontSize:15,fontWeight:600,lineHeight:1.7,marginBottom:18}},q.q),
+    ...q.opts.map((opt,i)=>{
+      let bg=D.surface,border=D.border,color=D.text,opacity=1;
+      if(ans!==null){if(i===q.correct){bg=D.greenBg;border=D.green;color=D.green;}else if(ans===i){bg=D.redBg;border=D.red;color=D.red;}else opacity=0.3;}
+      return React.createElement('button',{key:i,onClick:()=>ans===null&&onAnswer(i),style:{width:"100%",marginBottom:8,padding:"12px 14px",background:bg,border:`1.5px solid ${border}`,borderRadius:12,color,cursor:ans===null?"pointer":"default",textAlign:"left",display:"flex",alignItems:"center",gap:10,opacity}},
+        React.createElement('span',{style:{width:26,height:26,borderRadius:7,background:ans===null?D.surface2:"transparent",color:ans===null?D.green:"inherit",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,flexShrink:0}},["A","B","C","D"][i]),
+        React.createElement('span',{style:{fontSize:14}},opt)
+      );
+    })
+  );
+}
+
+function TFView({q,ans,onAnswer}){
+  const s=(val)=>{let bg=D.surface,border=D.border,color=D.text;if(ans!==null){if(val===q.correct){bg=D.greenBg;border=D.green;color=D.green;}else if(ans===val){bg=D.redBg;border=D.red;color=D.red;}}return{...sBtn(bg),background:bg,border:`1.5px solid ${border}`,color,flex:1};};
+  return React.createElement('div',null,
+    React.createElement('div',{style:{fontSize:11,color:D.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}},"✓✗ Richtig oder Falsch?"),
+    React.createElement('div',{style:{fontSize:15,fontWeight:600,lineHeight:1.7,marginBottom:20}},q.q),
+    React.createElement('div',{style:{display:"flex",gap:10}},
+      React.createElement('button',{style:s(true),onClick:()=>ans===null&&onAnswer(true)},"✅ Richtig"),
+      React.createElement('button',{style:s(false),onClick:()=>ans===null&&onAnswer(false)},"❌ Falsch")
+    )
+  );
+}
+
+function FillView({q,ans,fillInput,onFillChange,onAnswer}){
+  const check=()=>{if(!fillInput.trim())return;const u=norm(fillInput),a=norm(q.answer);const ok=u===a||u.includes(a)||a.includes(u)||lev(u,a)<=2;onAnswer(ok?"correct":"wrong");};
+  const bColor=ans==="correct"?D.green:ans==="wrong"?D.red:D.border;
+  const parts=q.q.split("___");
+  return React.createElement('div',null,
+    React.createElement('div',{style:{fontSize:11,color:D.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}},"✏️ Lückentext"),
+    React.createElement('div',{style:{fontSize:15,fontWeight:600,lineHeight:1.9,marginBottom:20}},
+      ...parts.map((part,i)=>[
+        part,
+        i<parts.length-1?React.createElement('span',{key:i,style:{display:"inline-block",minWidth:90,borderBottom:`2px solid ${bColor}`,padding:"0 6px",margin:"0 4px",color:ans==="correct"?D.green:ans==="wrong"?D.red:"#94A3B8",fontWeight:ans!==null?700:400}},ans!==null?fillInput:"　　"):null
+      ]).flat()
+    ),
+    ans===null?
+      React.createElement('div',{style:{display:"flex",gap:8}},
+        React.createElement('input',{value:fillInput,onChange:e=>onFillChange(e.target.value),onKeyDown:e=>e.key==="Enter"&&check(),placeholder:"Antwort eingeben...",autoFocus:true,style:{flex:1,padding:"12px 14px",background:D.surface,border:`1.5px solid ${D.border}`,borderRadius:12,color:D.text,fontSize:14,outline:"none"}}),
+        React.createElement('button',{onClick:check,style:{padding:"12px 16px",background:D.green,color:"#fff",border:"none",borderRadius:12,fontWeight:700,fontSize:16,cursor:"pointer"}},"→")
+      ):
+      React.createElement('div',{style:{padding:"12px 15px",background:ans==="correct"?D.greenBg:D.redBg,border:`1.5px solid ${ans==="correct"?D.green:D.red}`,borderRadius:12,color:ans==="correct"?D.green:D.red,fontSize:14,fontWeight:600}},
+        ans==="correct"?"✓ Richtig!":`✗ Richtige Antwort: "${q.answer}"`
+      )
+  );
+}
+
+function LessonScreen({q,qi,total,lives,ans,feedback,fillInput,onFillChange,onAnswer,onNext,onAbort}){
+  const[reelDone,setReelDone]=useState(false);
+  useEffect(()=>{setReelDone(false);},[qi]);
+  const isCorrect=q.type==="FILL"?ans==="correct":ans===q.correct;
+  const showQ=q.type!=="REEL"||reelDone;
+  return React.createElement('div',{style:{minHeight:"100dvh",background:D.bg,color:D.text}},
+    React.createElement('div',{style:{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,background:D.bg,position:"sticky",top:0,zIndex:5}},
+      React.createElement('button',{onClick:onAbort,style:{background:"none",border:"none",color:D.muted,cursor:"pointer",fontSize:22,lineHeight:1,padding:"0 4px 0 0"}},"×"),
+      React.createElement('div',{style:{flex:1,height:7,background:D.surface2,borderRadius:4,overflow:"hidden"}},
+        React.createElement('div',{style:{height:7,background:D.green,borderRadius:4,width:`${(qi/total)*100}%`,transition:"width 0.4s"}})
+      ),
+      React.createElement('div',{style:{display:"flex",gap:2}},...[1,2,3].map(i=>React.createElement('span',{key:i,style:{fontSize:16}},lives>=i?"❤️":"🖤")))
+    ),
+    React.createElement('div',{style:{padding:"2px 16px 4px",color:D.muted,fontSize:11}},`${qi+1} / ${total}`),
+    React.createElement('div',{style:{padding:"10px 16px 160px"}},
+      !showQ?React.createElement(ReelCard,{q,onDone:()=>setReelDone(true)}):
+      q.type==="MC"?React.createElement(MCView,{q,ans,onAnswer}):
+      q.type==="REEL"?React.createElement(MCView,{q,ans,onAnswer,label:"❓ Kontrollfrage"}):
+      q.type==="TF"?React.createElement(TFView,{q,ans,onAnswer}):
+      React.createElement(FillView,{q,ans,fillInput,onFillChange,onAnswer})
+    ),
+    feedback&&React.createElement('div',{style:{position:"fixed",bottom:0,left:0,right:0,background:isCorrect?D.greenBg:D.redBg,borderTop:`3px solid ${isCorrect?D.green:D.red}`,padding:"16px 16px 32px"}},
+      React.createElement('div',{style:{maxWidth:540,margin:"0 auto"}},
+        React.createElement('div',{style:{display:"flex",gap:10,marginBottom:12}},
+          React.createElement('span',{style:{fontSize:20,flexShrink:0}},isCorrect?"🎉":"💡"),
+          React.createElement('div',null,
+            React.createElement('div',{style:{fontWeight:700,fontSize:14,color:isCorrect?D.green:D.red,marginBottom:3}},isCorrect?"Richtig!":"Nicht ganz..."),
+            React.createElement('div',{style:{fontSize:13,color:"#CBD5E1",lineHeight:1.6}},q.why)
+          )
+        ),
+        React.createElement('button',{onClick:onNext,style:sBtn(isCorrect?D.green:D.red)},"Weiter →")
+      )
+    )
+  );
+}
+
+function ResultScreen({score,total,earned,stage,passed,onHome,onRetry}){
+  const pct=Math.round((score/total)*100);
+  return React.createElement('div',{style:{minHeight:"100dvh",background:D.bg,display:"flex",alignItems:"center",justifyContent:"center",padding:20}},
+    React.createElement('div',{style:{maxWidth:380,width:"100%",textAlign:"center"}},
+      React.createElement('div',{style:{fontSize:64,marginBottom:14}},passed?"🏆":"💪"),
+      React.createElement('div',{style:{fontWeight:800,fontSize:24,color:D.text,marginBottom:4}},passed?"Ausgezeichnet!":"Weiter üben!"),
+      React.createElement('div',{style:{color:D.muted,fontSize:14,marginBottom:26}},stage.title),
+      React.createElement('div',{style:{background:D.surface,borderRadius:18,padding:20,marginBottom:14,display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}},
+        React.createElement('div',null,React.createElement('div',{style:{fontSize:30,fontWeight:800,color:passed?D.green:D.red}},`${pct}%`),React.createElement('div',{style:{fontSize:11,color:D.muted}},"Ergebnis")),
+        React.createElement('div',null,React.createElement('div',{style:{fontSize:30,fontWeight:800,color:D.amber}},`+${earned}`),React.createElement('div',{style:{fontSize:11,color:D.muted}},"XP")),
+        React.createElement('div',null,React.createElement('div',{style:{fontSize:30,fontWeight:800,color:D.text}},`${score}/${total}`),React.createElement('div',{style:{fontSize:11,color:D.muted}},"Richtig"))
+      ),
+      passed&&React.createElement('div',{style:{background:D.greenBg,borderRadius:12,padding:10,marginBottom:14,color:D.green,fontSize:13,fontWeight:600}},"✅ Stage abgeschlossen!"),
+      React.createElement('div',{style:{display:"flex",flexDirection:"column",gap:10}},
+        React.createElement('button',{onClick:onHome,style:sBtn(D.green)},"Zur Übersicht"),
+        React.createElement('button',{onClick:onRetry,style:sBtn(D.green,true)},"Nochmal versuchen")
+      )
+    )
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App(){
+  const p=load();
+  const[screen,setScreen]=useState("home");
+  const[stage,setStage]=useState(null);
+  const[questions,setQuestions]=useState([]);
+  const[qi,setQi]=useState(0);
+  const[lives,setLives]=useState(3);
+  const[ans,setAns]=useState(null);
+  const[feedback,setFeedback]=useState(false);
+  const[fillInput,setFillInput]=useState("");
+  const[done,setDone]=useState(new Set(p.done||[]));
+  const[xp,setXp]=useState(p.xp||0);
+  const scoreRef=useRef(0);
+  const livesRef=useRef(3);
+
+  const startLesson=(s)=>{
+    setStage(s);const qs=getQs(s.id);setQuestions(qs);setQi(0);setLives(3);setAns(null);setFeedback(false);setFillInput("");
+    scoreRef.current=0;livesRef.current=3;setScreen("lesson");
+  };
+  const handleAnswer=(a)=>{
+    if(feedback)return;setAns(a);setFeedback(true);
+    const ok=questions[qi].type==="FILL"?a==="correct":a===questions[qi].correct;
+    if(ok)scoreRef.current++;else{livesRef.current--;setLives(livesRef.current);}
+  };
+  const goNext=()=>{
+    if(qi+1>=questions.length||livesRef.current<=0){
+      const earned=scoreRef.current*15;const passed=scoreRef.current>=Math.ceil(questions.length*0.6);
+      const nx=xp+earned;const nd=new Set(done);if(passed)nd.add(stage.id);
+      setXp(nx);setDone(nd);save(nd,nx);setScreen("result");
+    }else{setQi(i=>i+1);setAns(null);setFeedback(false);setFillInput("");}
+  };
+  const handleReset=()=>{if(!window.confirm("Fortschritt zurücksetzen?"))return;const e=new Set();setDone(e);setXp(0);save(e,0);};
+  const handleExport=()=>{const data=JSON.stringify({done:[...done],xp},null,2);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download="pflege-fortschritt.json";a.click();};
+  const handleImport=(file)=>{if(!file)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);const nd=new Set(d.done||[]);setDone(nd);setXp(d.xp||0);save(nd,d.xp||0);alert("✅ Fortschritt importiert!");}catch{alert("Datei konnte nicht gelesen werden.");}};r.readAsText(file);};
+
+  if(screen==="result"){const passed=scoreRef.current>=Math.ceil(questions.length*0.6);return React.createElement(ResultScreen,{score:scoreRef.current,total:questions.length,earned:scoreRef.current*15,stage,passed,onHome:()=>setScreen("home"),onRetry:()=>startLesson(stage)});}
+  if(screen==="lesson"&&questions.length>0)return React.createElement(LessonScreen,{q:questions[qi],qi,total:questions.length,lives,ans,feedback,fillInput,onFillChange:setFillInput,onAnswer:handleAnswer,onNext:goNext,onAbort:()=>setScreen("home")});
+  return React.createElement(HomeScreen,{done,xp,onStart:startLesson,onReset:handleReset,onExport:handleExport,onImport:handleImport});
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>

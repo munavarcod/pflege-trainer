@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0f172a"/>
+<title>PflegeTrainer 2.0 – Saarland 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overscroll-behavior:none;min-height:100dvh}
+button{font-family:inherit;cursor:pointer;border:none;transition:all .15s}
+button:active{transform:scale(.97);opacity:.85}
+input{font-family:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+.hide{display:none!important}
+
+/* === NAV === */
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #334155;display:flex;z-index:99;padding:4px 0 env(safe-area-inset-bottom,8px)}
+.nav button{flex:1;background:none;color:#64748b;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;font-size:10px;font-weight:600}
+.nav button.act{color:#10b981}
+.nav button i{font-size:22px;font-style:normal}
+
+/* === HEADER === */
+.hdr{position:sticky;top:0;background:#0f172a;z-index:50;padding:12px 16px;border-bottom:1px solid #334155}
+.hdr-r{max-width:540px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:17px;font-weight:800}
+.hdr-badges{display:flex;gap:8px;align-items:center}
+.badge{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700}
+.badge i{font-style:normal}
+
+/* === SCROLL === */
+.scr{max-width:540px;margin:0 auto;padding:12px 16px 100px}
+
+/* === UNIT === */
+.unit{margin-bottom:20px}
+.unit-h{padding:12px 16px;border-radius:14px;display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.unit-h h2{font-size:14px;font-weight:700;flex:1}
+.unit-h .ct{font-size:12px;font-weight:700;opacity:.8}
+.unit-p{height:4px;border-radius:2px;margin:0 4px 10px;overflow:hidden;background:#1e293b}
+.unit-p div{height:100%;border-radius:2px;transition:width .6s}
+
+/* === SKILL === */
+.sk{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;width:100%;margin-bottom:5px;text-align:left;color:#e2e8f0;background:#1e293b;border:1.5px solid #334155}
+.sk.gold{border-color:#f59e0b;background:#f59e0b10}
+.sk.done{border-color:#10b981;background:#10b98110}
+.sk.locked{opacity:.35;pointer-events:none}
+.sk-ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sk-info{flex:1}
+.sk-t{font-weight:600;font-size:14px}
+.sk-s{font-size:11px;margin-top:2px;color:#94a3b8}
+.sk.done .sk-s{color:#10b981}
+.sk.gold .sk-s{color:#f59e0b}
+.crowns{display:flex;gap:1px;margin-top:3px}
+.crowns i{font-style:normal;font-size:12px}
+
+/* === LESSON BAR === */
+.lb{display:flex;align-items:center;gap:10px;padding:12px 16px;position:sticky;top:0;background:#0f172a;z-index:50}
+.lb .x{background:none;color:#64748b;font-size:24px;padding:0 4px}
+.lb-p{flex:1;height:8px;background:#334155;border-radius:4px;overflow:hidden}
+.lb-p div{height:100%;background:#10b981;border-radius:4px;transition:width .4s}
+.lb-h{display:flex;gap:2px}
+.lb-h i{font-style:normal;font-size:16px}
+
+/* === QUESTION === */
+.qw{padding:8px 16px 200px}
+.qt{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.qq{font-size:15px;font-weight:600;line-height:1.7;margin-bottom:18px}
+
+/* === OPTIONS === */
+.opt{width:100%;padding:12px 14px;background:#1e293b;border:1.5px solid #334155;border-radius:12px;color:#e2e8f0;text-align:left;display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:14px}
+.opt .l{width:26px;height:26px;border-radius:7px;background:#334155;color:#10b981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.opt.ok{background:#065f46;border-color:#10b981;color:#10b981}
+.opt.no{background:#7f1d1d;border-color:#ef4444;color:#ef4444}
+.opt.dim{opacity:.3}
+
+/* === TF === */
+.tfr{display:flex;gap:10px}
+.tfb{flex:1;padding:14px;border-radius:12px;font-weight:700;font-size:16px;background:#1e293b;border:1.5px solid #334155;color:#e2e8f0}
+.tfb.ok{background:#065f46;border-color:#10b981;color:#10b981}
+.tfb.no{background:#7f1d1d;border-color:#ef4444;color:#ef4444}
+
+/* === FILL === */
+.flr{display:flex;gap:8px}
+.fli{flex:1;padding:12px 14px;background:#1e293b;border:1.5px solid #334155;border-radius:12px;color:#e2e8f0;font-size:14px;outline:none}
+.fli:focus{border-color:#10b981}
+.flg{padding:12px 18px;background:#10b981;color:#fff;border-radius:12px;font-weight:700;font-size:16px}
+.flx{padding:12px 15px;border-radius:12px;font-size:14px;font-weight:600}
+.flx.ok{background:#065f46;border:1.5px solid #10b981;color:#10b981}
+.flx.no{background:#7f1d1d;border:1.5px solid #ef4444;color:#ef4444}
+
+/* === MATCH === */
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mb{padding:10px;border-radius:10px;font-size:12px;text-align:center;font-weight:500;border:1.5px solid #334155;background:#1e293b;color:#e2e8f0;min-height:52px;display:flex;align-items:center;justify-content:center;line-height:1.4}
+.mb.sel{border-color:#3b82f6;background:#3b82f610;color:#3b82f6}
+.mb.ok{border-color:#10b981;background:#065f46;color:#10b981;opacity:.6;pointer-events:none}
+.mb.err{border-color:#ef4444;background:#7f1d1d;color:#ef4444}
+
+/* === FEEDBACK === */
+.fb{position:fixed;bottom:0;left:0;right:0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,8px));z-index:60}
+.fb.ok{background:#064e3b;border-top:3px solid #10b981}
+.fb.no{background:#450a0a;border-top:3px solid #ef4444}
+.fb-i{max-width:540px;margin:0 auto}
+.fb-r{display:flex;gap:10px;margin-bottom:12px}
+.fb-e{font-size:20px;flex-shrink:0}
+.fb-t{font-weight:700;font-size:14px;margin-bottom:3px}
+.fb-w{font-size:13px;color:#cbd5e1;line-height:1.6}
+.fb-b{width:100%;padding:13px;border-radius:13px;font-weight:700;font-size:16px;color:#fff}
+.fb-b.ok{background:#10b981}
+.fb-b.no{background:#ef4444}
+
+/* === RESULT === */
+.res{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+.res-i{max-width:380px;width:100%;text-align:center}
+.res-e{font-size:64px;margin-bottom:14px}
+.res-t{font-weight:800;font-size:24px;margin-bottom:4px}
+.res-s{color:#94a3b8;font-size:14px;margin-bottom:26px}
+.res-g{background:#1e293b;border-radius:18px;padding:20px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.res-n{font-size:28px;font-weight:800}
+.res-l{font-size:11px;color:#94a3b8}
+.res-p{background:#065f46;border-radius:12px;padding:10px;margin-bottom:14px;color:#10b981;font-size:13px;font-weight:600}
+.gb{padding:13px 18px;border-radius:13px;font-weight:700;font-size:16px;width:100%;margin-bottom:8px}
+.gb-g{background:#10b981;color:#fff}
+.gb-o{background:transparent;color:#e2e8f0;border:1.5px solid #334155}
+
+/* === PRACTICE BANNER === */
+.pban{background:linear-gradient(135deg,#f59e0b20,#f59e0b05);border:1.5px solid #f59e0b40;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.pban i{font-style:normal;font-size:24px}
+.pban-t{font-weight:700;font-size:14px;color:#f59e0b}
+.pban-s{font-size:11px;color:#94a3b8;margin-top:2px}
+
+/* === PROFILE === */
+.pcard{background:#1e293b;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid #334155}
+.pcard h3{font-size:13px;color:#94a3b8;margin-bottom:10px}
+.prow{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.pval{font-weight:700;font-size:16px}
+.pbtn{margin-top:8px;padding:10px;border-radius:10px;width:100%;font-size:13px;font-weight:600;background:#334155;color:#e2e8f0}
+
+/* === DAILY GOAL === */
+.dg{background:#1e293b;border-radius:14px;padding:14px 16px;margin-bottom:16px;border:1px solid #334155}
+.dg-t{font-size:12px;color:#94a3b8;margin-bottom:8px}
+.dg-b{height:8px;background:#334155;border-radius:4px;overflow:hidden}
+.dg-b div{height:100%;background:#10b981;border-radius:4px;transition:width .6s}
+.dg-l{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#64748b}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const el=(t,p={},c='')=>{const e=document.createElement(t);Object.entries(p).forEach(([k,v])=>{if(k==='style'&&typeof v==='object')Object.assign(e.style,v);else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v)});if(typeof c==='string')e.innerHTML=c;else if(c instanceof HTMLElement)e.appendChild(c);else if(Array.isArray(c))c.forEach(x=>x&&e.appendChild(typeof x==='string'?document.createTextNode(x):x));return e};
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function norm(s){return s.toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]/g,'');}
+function lev(a,b){if(!a.length)return b.length;if(!b.length)return a.length;const m=[];for(let i=0;i<=b.length;i++){m[i]=[i];for(let j=1;j<=a.length;j++)m[i][j]=i===0?j:0;}for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)m[i][j]=b[i-1]===a[j-1]?m[i-1][j-1]:1+Math.min(m[i-1][j-1],m[i][j-1],m[i-1][j]);return m[b.length][a.length];}
+function fuzzy(u,a){const un=norm(u),an=norm(a);return un===an||un.includes(an)||an.includes(un)||lev(un,an)<=Math.max(2,Math.floor(an.length*0.25));}
+const today=()=>new Date().toISOString().split('T')[0];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════════════════
+const SK='pt2-v1';
+const DEFS={crowns:{},xp:0,streak:0,lastDay:'',dailyXP:0,dailyGoal:150,hearts:5,lastHearts:''};
+let ST;
+function load(){try{ST=JSON.parse(localStorage.getItem(SK))||{...DEFS};}catch{ST={...DEFS};}if(!ST.crowns)ST.crowns={};if(!ST.streak)ST.streak=0;}
+function save(){try{localStorage.setItem(SK,JSON.stringify(ST));}catch{}}
+function getCrowns(sid){return ST.crowns[sid]||0;}
+function addCrown(sid){ST.crowns[sid]=Math.min((ST.crowns[sid]||0)+1,5);save();}
+function addXP(n){ST.xp+=n;ST.dailyXP+=n;const t=today();if(ST.lastDay!==t){if(ST.lastDay===new Date(Date.now()-86400000).toISOString().split('T')[0])ST.streak++;else if(ST.lastDay!==t)ST.streak=1;ST.lastDay=t;ST.dailyXP=n;}save();}
+function refillHearts(){const t=today();if(ST.lastHearts!==t){ST.hearts=5;ST.lastHearts=t;save();}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA – BLOCK 1: TAG 1–18
+// Units → Skills → Concepts
+// ═══════════════════════════════════════════════════════════════════════════
+const UNITS=[
+  {id:1,t:"Pflegeprozess & Planung",c:"#10b981",e:"📋",desc:"Tag 1–5: 6 Schritte, SMART, PES, ABEDL, SIS, Theorien"},
+  {id:2,t:"Assessment & Prophylaxen",c:"#06b6d4",e:"🛡️",desc:"Tag 6–14: Braden, Norton, Morse, Barthel, Dekubitus, Sturz, Thrombose"},
+  {id:3,t:"Kommunikation & Ethik",c:"#3b82f6",e:"💬",desc:"Tag 15–18: Watzlawick, 4-Ohren, Validation, Ethik, Beratung"},
+  {id:4,t:"Herz-Kreislauf",c:"#ef4444",e:"❤️",desc:"Tag 20–22: Herzinsuffizienz, KHK, Herzinfarkt, Hypertonie"},
+  {id:5,t:"Stoffwechsel & Innere",c:"#f59e0b",e:"🔬",desc:"Tag 23, 26–28: Diabetes, Thrombose, Anämie, Niere, Osteoporose"},
+  {id:6,t:"Atemwege",c:"#06b6d4",e:"🫁",desc:"Tag 24–25: COPD, Asthma, Pneumonie, Lungenembolie"},
+  {id:7,t:"Chirurgie & Wunden",c:"#ec4899",e:"🩹",desc:"Tag 29–30: Prä-/Postoperativ, Wundheilung, Stoma"},
+  {id:8,t:"Pharmakologie",c:"#f97316",e:"💊",desc:"Tag 33–38: 6-R, ADME, Herzmedikamente, Antikoagulantien, WHO-Schmerz"},
+  {id:9,t:"Infektionen & Hygiene",c:"#84cc16",e:"🦠",desc:"Tag 30–31: Sepsis, MRSA, Stoma, PEG"},
+  {id:10,t:"Neurologie",c:"#8b5cf6",e:"🧠",desc:"Tag 39–41: Schlaganfall, Parkinson, MS, Epilepsie"},
+  {id:11,t:"Psychiatrie",c:"#a855f7",e:"💙",desc:"Tag 42–43, 49–50: Demenz, Depression, Sucht, Essstörungen"},
+  {id:12,t:"Recht, Prävention & Spezial",c:"#ef4444",e:"⚖️",desc:"Tag 44–51: Geriatrie, Palliativ, Recht, Ottawa, SBAR, Pädiatrie"},
+];
+
+const SKILLS=[
+  // Unit 1
+  {id:"pp",u:1,t:"Pflegeprozess",i:"🔄",pre:null},
+  {id:"smart",u:1,t:"SMART-Ziele & PES",i:"🎯",pre:"pp"},
+  {id:"abedl",u:1,t:"ABEDL & SIS",i:"📝",pre:"smart"},
+  {id:"theo",u:1,t:"Pflegetheorien",i:"📚",pre:"abedl"},
+  {id:"doku",u:1,t:"Dokumentation",i:"📄",pre:"theo"},
+  // Unit 2
+  {id:"scales",u:2,t:"Assessment-Skalen",i:"📊",pre:"doku"},
+  {id:"deku",u:2,t:"Dekubitusprophylaxe",i:"🛏️",pre:"scales"},
+  {id:"sturz",u:2,t:"Sturzprophylaxe",i:"🚶",pre:"scales"},
+  {id:"proph",u:2,t:"Thrombose & Pneumonie",i:"💉",pre:"sturz"},
+  // Unit 3
+  {id:"komm",u:3,t:"Kommunikationsmodelle",i:"👂",pre:"proph"},
+  {id:"valid",u:3,t:"Validation & Basale Stim.",i:"🤝",pre:"komm"},
+  {id:"ethik",u:3,t:"Ethik & Autonomie",i:"⚖️",pre:"valid"},
+  {id:"berat",u:3,t:"Beratung & Schulung",i:"🎓",pre:"ethik"},
+  // Unit 4: Herz-Kreislauf
+  {id:"hi",u:4,t:"Herzinsuffizienz",i:"💔",pre:"berat"},
+  {id:"khk",u:4,t:"KHK & Angina pectoris",i:"🫀",pre:"hi"},
+  {id:"hinfo",u:4,t:"Herzinfarkt",i:"🚨",pre:"khk"},
+  {id:"hyper",u:4,t:"Hypertonie",i:"📈",pre:"hinfo"},
+  // Unit 5: Stoffwechsel
+  {id:"dm",u:5,t:"Diabetes mellitus",i:"🩸",pre:"hyper"},
+  {id:"throm",u:5,t:"Thrombose & Anämie",i:"🦵",pre:"dm"},
+  {id:"niere",u:5,t:"Niere & HWI",i:"🫘",pre:"throm"},
+  {id:"osteo",u:5,t:"Osteoporose & Rheuma",i:"🦴",pre:"niere"},
+  // Unit 6: Atemwege
+  {id:"copd",u:6,t:"COPD & Asthma",i:"🌬️",pre:"osteo"},
+  {id:"pneu",u:6,t:"Pneumonie & Lungenembolie",i:"🫁",pre:"copd"},
+  // Unit 7: Chirurgie
+  {id:"periop",u:7,t:"Prä-/Postoperative Pflege",i:"🏥",pre:"pneu"},
+  {id:"wund",u:7,t:"Wundversorgung & Stoma",i:"🩹",pre:"periop"},
+  // Unit 8: Pharmakologie
+  {id:"6r",u:8,t:"6-R-Regel & ADME",i:"✅",pre:"wund"},
+  {id:"herzmed",u:8,t:"Herzmedikamente",i:"💊",pre:"6r"},
+  {id:"antiko",u:8,t:"Antikoagulantien",i:"🩸",pre:"herzmed"},
+  {id:"who",u:8,t:"WHO-Schmerzschema",i:"😮‍💨",pre:"antiko"},
+  {id:"psycho",u:8,t:"Psychopharmaka",i:"🧪",pre:"who"},
+  // Unit 9: Infektionen
+  {id:"sepsis",u:9,t:"Sepsis & qSOFA",i:"🚨",pre:"psycho"},
+  {id:"mrsa",u:9,t:"MRSA & Hygiene",i:"🧤",pre:"sepsis"},
+  // Unit 10: Neurologie
+  {id:"apop",u:10,t:"Schlaganfall & Bobath",i:"⚡",pre:"mrsa"},
+  {id:"park",u:10,t:"Parkinson & MS",i:"🚶",pre:"apop"},
+  {id:"epi",u:10,t:"Epilepsie",i:"⚡",pre:"park"},
+  // Unit 11: Psychiatrie
+  {id:"dem",u:11,t:"Demenz",i:"🧩",pre:"epi"},
+  {id:"depr",u:11,t:"Depression & Suizid",i:"💙",pre:"dem"},
+  {id:"sucht",u:11,t:"Sucht & Essstörungen",i:"🍷",pre:"depr"},
+  // Unit 12: Recht, Prävention, Spezial
+  {id:"geri",u:12,t:"Geriatrie & Palliativ",i:"👴",pre:"sucht"},
+  {id:"recht",u:12,t:"Rechtliche Grundlagen",i:"📜",pre:"geri"},
+  {id:"praev",u:12,t:"Ottawa & Salutogenese",i:"🌱",pre:"recht"},
+  {id:"sbar",u:12,t:"SBAR & Delegation",i:"🤲",pre:"praev"},
+  {id:"paed",u:12,t:"Pädiatrie",i:"👶",pre:"sbar"},
+];
+
+// Concepts: each one generates MC, TF, FILL, and sometimes MATCH questions
+// {s:skillId, t:term/concept, a:answer, d:distractors, h:hint, f:fill_sentence}
+const C=[
+// ── PFLEGEPROZESS ────────────────────────────────────────────────────────
+{s:"pp",t:"Anzahl Schritte Pflegeprozess",q:"Wie viele Schritte hat der Pflegeprozess nach Fiechter & Meier?",a:"6",d:["4","5","8"],h:"Info → Probleme → Ziele → Planung → Durchführung → Evaluation",f:"Der Pflegeprozess nach Fiechter & Meier hat ___ Schritte."},
+{s:"pp",t:"1. Schritt Pflegeprozess",q:"Welcher Schritt kommt ZUERST im Pflegeprozess?",a:"Informationssammlung",d:["Zielformulierung","Maßnahmenplanung","Evaluation"],h:"Schritt 1 = bio-psycho-soziale Informationssammlung",f:"Der erste Schritt im Pflegeprozess ist die ___."},
+{s:"pp",t:"6. Schritt Evaluation",q:"Was passiert im 6. Schritt (Evaluation)?",a:"Prüfung ob das Pflegeziel erreicht wurde",d:["Arzt wird informiert","Dokumentation wird abgeschlossen","Angehörige werden beraten"],h:"Evaluation → Zielerreichung prüfen → ggf. Prozess anpassen (Kreislauf!)",f:"Im 6. Schritt wird geprüft, ob das ___ erreicht wurde."},
+{s:"pp",t:"Nach Zielformulierung",q:"Welcher Schritt folgt auf die Zielformulierung?",a:"Maßnahmenplanung",d:["Durchführung","Evaluation","Informationssammlung"],h:"Ziele → Maßnahmen planen → Durchführung → Evaluation",f:"Nach der Zielformulierung folgt die ___."},
+{s:"pp",t:"Reihenfolge Pflegeprozess",q:"Richtige Reihenfolge: Info → Probleme → ?",a:"Ziele → Planung → Durchführung → Evaluation",d:["Durchführung → Planung → Ziele → Evaluation","Evaluation → Ziele → Planung → Durchführung","Planung → Ziele → Evaluation → Durchführung"],h:"6 Schritte: Info → Probleme → Ziele → Planung → Durchführung → Evaluation"},
+{s:"pp",t:"Kreislauf Pflegeprozess",q:"Die Evaluation kann dazu führen, dass:",a:"Der gesamte Pflegeprozess angepasst und von vorne begonnen wird",d:["Der Patient entlassen wird","Keine weiteren Maßnahmen nötig sind","Die Dokumentation gelöscht wird"],h:"Pflegeprozess = KREISLAUF – Evaluation führt zurück zu Schritt 1"},
+{s:"pp",t:"Potenzielles Problem",q:"Was ist ein POTENZIELLES Pflegeproblem?",a:"Ein Risiko, das noch NICHT eingetreten ist",d:["Ein bereits bestehendes Problem","Ein gelöstes Problem","Ein verstecktes Problem"],h:"Potenziell = Risiko. Aktuell = bereits vorhanden. Unterschied kennen!",f:"Ein potenzielles Problem ist ein ___, das noch nicht eingetreten ist."},
+{s:"pp",t:"Ressourcentypen",q:"Frau L. wird von ihrer Familie unterstützt. Welcher Ressourcentyp?",a:"Soziale Ressource",d:["Physische Ressource","Materielle Ressource","Psychische Ressource"],h:"Soziale Ressourcen = Unterstützung durch Angehörige, Freunde, Netzwerk"},
+
+// ── SMART & PES ──────────────────────────────────────────────────────────
+{s:"smart",t:"SMART beschreibt",q:"SMART-Ziele beschreiben den ___ des Patienten",a:"Zustand",d:["Wunsch","Bedarf","Plan"],h:"Patientenzustand! 'Frau M. geht...' nicht 'Ich mobilisiere...'",f:"SMART-Ziele beschreiben den ___ des Patienten, nicht die Pflegehandlung."},
+{s:"smart",t:"Korrektes SMART-Ziel",q:"Welches ist ein korrektes SMART-Ziel?",a:"Frau M. geht bis Freitag mit Rollator 10 m selbständig",d:["Ich mobilisiere Frau M. täglich","Frau M. soll mehr bewegt werden","Die Mobilisation wird verbessert"],h:"SMART = spezifisch, messbar, akzeptiert, realistisch, terminiert"},
+{s:"smart",t:"SMART Abkürzung",q:"Wofür steht das S in SMART?",a:"Spezifisch",d:["Sicher","Schnell","Systematisch"],h:"S=Spezifisch, M=Messbar, A=Akzeptiert, R=Realistisch, T=Terminiert",f:"Das S in SMART steht für ___."},
+{s:"smart",t:"PES E-Bedeutung",q:"Wofür steht 'E' im PES-Format?",a:"Ätiologie (Ursache)",d:["Ergebnis","Evaluation","Erwartung"],h:"P=Problem, E=Ätiologie (Ursache), S=Symptome",f:"Im PES-Format steht E für ___ (Ursache)."},
+{s:"smart",t:"PES Potenzielle Diagnose",q:"Potenzielle Pflegediagnose im PES: Welcher Buchstabe FEHLT?",a:"S (Symptome – da Problem noch nicht eingetreten)",d:["P","E","Keiner fehlt"],h:"Potenziell = PE ohne S! Noch keine Symptome vorhanden."},
+{s:"smart",t:"Pflegediagnose vs Medizinische",q:"Pflegediagnose ≠ medizinische Diagnose. Der Unterschied:",a:"Pflegediagnose beschreibt Reaktionen des Patienten, medizinische die Krankheit",d:["Kein Unterschied","Pflegediagnose wird vom Arzt gestellt","Medizinische Diagnose umfasst Pflege"],h:"Pflegediagnose = Reaktion/Verhalten. Medizinische = Krankheit/Pathologie"},
+
+// ── ABEDL & SIS ──────────────────────────────────────────────────────────
+{s:"abedl",t:"Anzahl ABEDL",q:"Wie viele ABEDL hat Krohwinkels Modell?",a:"13",d:["10","12","14"],h:"Krohwinkel: 13 ABEDL. Henderson: 14 Grundbedürfnisse!",f:"Das ABEDL-Modell von Krohwinkel umfasst ___ Bereiche."},
+{s:"abedl",t:"ABEDL Nr. 1",q:"Welche ABEDL ist Nr. 1?",a:"Kommunizieren",d:["Sich bewegen","Essen und trinken","Ausscheiden"],h:"Nr. 1 = Kommunizieren. Nr. 2 = Sich bewegen. Nicht verwechseln!",f:"ABEDL Nr. 1 ist ___."},
+{s:"abedl",t:"ABEDL Nr. 13",q:"Welche ABEDL ist Nr. 13 (die letzte)?",a:"Mit existenziellen Erfahrungen umgehen",d:["Sich beschäftigen","Soziale Bereiche sichern","Für Sicherheit sorgen"],h:"Nr. 13 = Existenzielle Erfahrungen (Sterben, Trauer, Glaube, Sinn)"},
+{s:"abedl",t:"ABEDL bei Inkontinenz",q:"Patient mit Inkontinenz: Welche ABEDL betroffen?",a:"Ausscheiden",d:["Sich bewegen","Sich kleiden","Kommunizieren"],h:"ABEDL Nr. 6 = Ausscheiden"},
+{s:"abedl",t:"SIS Bedeutung",q:"Wofür steht SIS?",a:"Strukturierte Informationssammlung",d:["Standardisiertes Informationssystem","Strukturierte Interventionsstrategie","Systematische Inspektionsskala"],h:"SIS = Strukturierte Informationssammlung (Langzeitpflege)",f:"SIS steht für Strukturierte ___."},
+{s:"abedl",t:"SIS Themenfelder",q:"Wie viele Themenfelder hat die SIS?",a:"6",d:["4","5","13"],h:"6 TF: Kognition, Mobilität, Krankheit, Selbstversorgung, Soziales, Wohnen",f:"Die SIS hat ___ Themenfelder."},
+{s:"abedl",t:"SIS Feld B",q:"Was steht in Feld B der SIS?",a:"Eigenwahrnehmung des Pflegebedürftigen im Originalton (Zitat)",d:["Stammdaten","Maßnahmenplanung","Risikomatrix"],h:"Feld B = Perspektive des Pflegebedürftigen in ZITATFORM!"},
+{s:"abedl",t:"SIS Durchführung",q:"Wer darf die SIS durchführen?",a:"Nur eine Pflegefachkraft",d:["Jede Pflegekraft","Nur der Arzt","Angehörige"],h:"SIS-Erhebung = qualifizierte Aufgabe für Pflegefachkräfte"},
+{s:"abedl",t:"SIS Einsatzort",q:"Wo wird die SIS hauptsächlich eingesetzt?",a:"In der Langzeitpflege (Pflegeheim, ambulant)",d:["Nur im Krankenhaus","Nur in der Psychiatrie","Nur in der Kinderpflege"],h:"SIS = Langzeitpflege (stationär + ambulant)"},
+{s:"abedl",t:"SIS Risikomatrix",q:"Welche 5 Risiken erfasst die SIS-Risikomatrix?",a:"Dekubitus, Sturz, Inkontinenz, Schmerz, Ernährung",d:["Dekubitus, Sturz, Infektion, Blutung, Allergie","Nur Dekubitus und Sturz","Sturz, Kontraktur, Aspiration, Obstipation, Thrombose"],h:"5 Risiken + optional Kognition/Emotion"},
+{s:"abedl",t:"SIS vs ABEDL",q:"SIS und ABEDL sind:",a:"Verschiedene Instrumente – SIS ist KEIN Nachfolger von ABEDL",d:["Dasselbe Instrument","SIS ersetzt ABEDL komplett","ABEDL ist Teil der SIS"],h:"SIS ≠ ABEDL-Nachfolger! Verschiedene Werkzeuge für verschiedene Settings."},
+
+// ── PFLEGETHEORIEN ───────────────────────────────────────────────────────
+{s:"theo",t:"Orem 3 Systeme",q:"Welche 3 Systeme beschreibt Orem?",a:"Vollständig kompensatorisch, teilweise kompensatorisch, unterstützend-erzieherisch",d:["Akut, chronisch, palliativ","Primär, sekundär, tertiär","Ambulant, stationär, teilstationär"],h:"Je nach Selbstpflegefähigkeit des Patienten"},
+{s:"theo",t:"Orem beatmeter Patient",q:"Patient beatmet und bewusstlos → Welches Orem-System?",a:"Vollständig kompensatorisch",d:["Teilweise kompensatorisch","Unterstützend-erzieherisch","Kooperativ"],h:"Vollständig kompensatorisch = PFK übernimmt ALLES"},
+{s:"theo",t:"Orem Schulung",q:"Diabetiker-Schulung: Patient handelt selbst → Welches Orem-System?",a:"Unterstützend-erzieherisch",d:["Vollständig kompensatorisch","Teilweise kompensatorisch","Reaktiv"],h:"Unterstützend-erzieherisch: Patient handelt, PFK berät/schult"},
+{s:"theo",t:"Peplau Phasen",q:"Wie viele Phasen hat Peplaus Beziehungsmodell?",a:"4",d:["3","5","6"],h:"Orientierung → Identifikation → Nutzung → Ablösung",f:"Peplaus Beziehungsmodell hat ___ Phasen."},
+{s:"theo",t:"Peplau Ablösung",q:"In welcher Peplau-Phase wird der Patient entlassen?",a:"Ablösungsphase (4. Phase)",d:["Orientierungsphase","Nutzungsphase","Identifikationsphase"],h:"Ablösung = Entlassung, Patient wird selbstständig"},
+{s:"theo",t:"Henderson Anzahl",q:"Wie viele Grundbedürfnisse formulierte Henderson?",a:"14",d:["10","12","13"],h:"Henderson: 14. Krohwinkel: 13. Zahlen nicht verwechseln!",f:"Henderson formulierte ___ Grundbedürfnisse."},
+{s:"theo",t:"Krohwinkel Ansatz",q:"Krohwinkels Pflegeansatz heißt:",a:"Fördernde Prozesspflege (aktivierende Pflege)",d:["Kompensatorische Pflege","Funktionelle Pflege","Bezugspflege"],h:"Aktivierend/reaktivierend: Selbständigkeit FÖRDERN"},
+{s:"theo",t:"Peplau Nutzungsphase",q:"In welcher Peplau-Phase nutzt der Patient aktiv die Pflegeangebote?",a:"Nutzungsphase (3. Phase)",d:["Orientierungsphase","Identifikationsphase","Ablösungsphase"],h:"Nutzungsphase: Patient nutzt Pflegeangebote aktiv"},
+
+// ── DOKUMENTATION ────────────────────────────────────────────────────────
+{s:"doku",t:"Nicht dokumentiert",q:"Was nicht dokumentiert ist, gilt als:",a:"Nicht getan",d:["Erledigt","Irrelevant","Mündlich bestätigt"],h:"Dokumentation = rechtliche Absicherung + Beweismittel!",f:"Was nicht dokumentiert ist, gilt als nicht ___."},
+{s:"doku",t:"Fehlerkorrektur",q:"Wie korrigiert man einen Fehler in der Pflegedokumentation?",a:"Einmal durchstreichen + Kürzel + Datum",d:["Tipp-Ex verwenden","Neues Blatt","Unleserlich übermalen"],h:"Leserlich durchstreichen + Handzeichen + Datum. KEIN Tipp-Ex!",f:"Fehler in der Dokumentation: durchstreichen + ___ + Datum."},
+{s:"doku",t:"Dokumentation zeitnah",q:"Pflegemaßnahmen müssen dokumentiert werden:",a:"Zeitnah, vollständig, leserlich und nachvollziehbar",d:["Am Schichtende gesammelt","Nur bei besonderen Vorkommnissen","Mündlich reicht"],h:"Zeitnah + vollständig + leserlich + chronologisch + nachvollziehbar"},
+{s:"doku",t:"Rechtliche Bedeutung",q:"Pflegedokumentation ist rechtlich ein:",a:"Beweismittel (bei Haftungsfragen)",d:["Nur internes Dokument","Unwichtige Formalität","Nur für Angehörige"],h:"Dokumentation = Beweismittel bei §823 BGB Haftungsfragen"},
+
+// ── ASSESSMENT-SKALEN ────────────────────────────────────────────────────
+{s:"scales",t:"Braden Dekubitus",q:"Braden-Score 16 bedeutet:",a:"Dekubitusrisiko – sofort Prophylaxe!",d:["Kein Risiko","Sturzrisiko","Schmerzrisiko"],h:"Braden ≤18 = Dekubitusrisiko. NIEDRIGER = HÖHERES Risiko!",f:"Braden ≤___ bedeutet Dekubitusrisiko."},
+{s:"scales",t:"Norton Dekubitus",q:"Norton-Score 22 bedeutet:",a:"Dekubitusrisiko (Norton <25 = Risiko)",d:["Kein Risiko","Sturzrisiko","Hohes Wohlbefinden"],h:"Norton <25 = Dekubitusrisiko",f:"Norton <___ bedeutet Dekubitusrisiko."},
+{s:"scales",t:"Morse Sturz",q:"Ab welchem Morse-Wert besteht hohes Sturzrisiko?",a:"≥45",d:["≥25","≥30","≥60"],h:"Morse Fall Scale: ≥45 = hohes Sturzrisiko",f:"Morse ≥___ bedeutet hohes Sturzrisiko."},
+{s:"scales",t:"Barthel Bedeutung",q:"Barthel-Index 35 bedeutet:",a:"Mittlerer Pflegebedarf (31–65)",d:["Kein Pflegebedarf","Leichter Pflegebedarf","Schwerer Pflegebedarf"],h:"Barthel: 0-30=schwer, 31-65=mittel, 66-95=leicht, 96-100=selbständig"},
+{s:"scales",t:"BESD Zielgruppe",q:"Bei wem wird die BESD-Skala eingesetzt?",a:"Patienten mit Demenz (keine verbale Schmerzkommunikation)",d:["Kinder","Sportler","Nur postoperativ"],h:"BESD = Beobachtungs-Schmerzskala bei Demenz",f:"Die BESD-Skala wird bei Patienten mit ___ eingesetzt."},
+{s:"scales",t:"NRS Maximum",q:"NRS 10 bedeutet:",a:"Unerträglicher/stärkster vorstellbarer Schmerz",d:["Kein Schmerz","Leichter Schmerz","Mittlerer Schmerz"],h:"NRS: 0=kein Schmerz, 10=unerträglich"},
+{s:"scales",t:"MMSE Demenz",q:"MMSE <24 Punkte deutet auf:",a:"Verdacht auf Demenz",d:["Sturzrisiko","Dekubitusrisiko","Depression"],h:"MMSE: max. 30, <24 = Demenzverdacht",f:"MMSE <___ deutet auf Demenz hin."},
+{s:"scales",t:"Braden Subskalen",q:"Wie viele Subskalen hat der Braden-Score?",a:"6",d:["4","5","8"],h:"Sensorik, Feuchtigkeit, Aktivität, Mobilität, Ernährung, Reibung/Scherkräfte",f:"Der Braden-Score hat ___ Subskalen."},
+
+// ── DEKUBITUSPROPHYLAXE ──────────────────────────────────────────────────
+{s:"deku",t:"Lagerungswinkel",q:"In welchem Winkel wird zur Dekubitusprophylaxe gelagert?",a:"30° Schräglage",d:["90° Seitenlage","45° Winkel","15° Neigung"],h:"30°-Schräglagerung = Standard!",f:"Zur Dekubitusprophylaxe wird in ___°-Schräglage gelagert."},
+{s:"deku",t:"Lagerungsintervall Tag",q:"Maximaler Lagerungsabstand tagsüber:",a:"Alle 2 Stunden",d:["Alle 30 Minuten","Alle 4 Stunden","Alle 6 Stunden"],h:"Tag: max. 2h. Nacht: max. 4h.",f:"Tagsüber wird maximal alle ___ Stunden umgelagert."},
+{s:"deku",t:"Stadium I",q:"Dekubitus Stadium I ist:",a:"Nicht wegdrückbare Rötung bei intakter Haut",d:["Blasenbildung","Tiefe Wunde","Knochen sichtbar"],h:"Fingertest: Rötung bleibt! Erste Warnstufe.",f:"Dekubitus Stadium I zeigt eine nicht wegdrückbare ___ bei intakter Haut."},
+{s:"deku",t:"Stadium IV",q:"Dekubitus Stadium IV bedeutet:",a:"Gewebsuntergang mit freiliegenden Knochen/Sehnen",d:["Nur Rötung","Blasenbildung","Wunde bis Unterhautfett"],h:"Stadium IV = schwerster Dekubitus!"},
+{s:"deku",t:"4 Stadien",q:"Wie viele Dekubitus-Stadien gibt es?",a:"4",d:["3","5","6"],h:"I=Rötung, II=Blase/Hautdefekt, III=bis Faszie, IV=bis Knochen",f:"Es gibt ___ Dekubitus-Stadien."},
+
+// ── STURZPROPHYLAXE ──────────────────────────────────────────────────────
+{s:"sturz",t:"Nachtlicht extrinsisch",q:"Nachtlicht im Flur ist welche Art von Sturzprophylaxe?",a:"Extrinsisch (Umgebungsanpassung)",d:["Intrinsisch","Medikamentös","Physiotherapeutisch"],h:"Extrinsisch = Umgebung. Intrinsisch = Patient."},
+{s:"sturz",t:"Diuretika intrinsisch",q:"Diuretika als Sturzrisikofaktor sind:",a:"Intrinsisch (medikamentenbedingt)",d:["Extrinsisch","Sozial","Psychisch"],h:"Intrinsisch = im Patienten: Medikamente, Schwindel, Sehstörung"},
+{s:"sturz",t:"Extrinsische Maßnahmen",q:"Nennen Sie eine extrinsische Sturzprophylaxemaßnahme:",a:"Antirutschsocken, Niedrigbett, Nachtlicht, Haltegriffe",d:["Medikamente anpassen","Schwindel behandeln","Gleichgewichtstraining"],h:"Extrinsisch = Umgebung anpassen!"},
+{s:"sturz",t:"Morse Grenzwert",q:"Hohes Sturzrisiko nach Morse ab:",a:"≥45 Punkte",d:["≥25","≥30","≥60"],h:"Morse Fall Scale: ≥45 = hohes Sturzrisiko"},
+
+// ── THROMBOSE & PNEUMONIEPROPHYLAXE ──────────────────────────────────────
+{s:"proph",t:"VIRCHOW-Trias",q:"Welche 3 Faktoren bilden die VIRCHOW-Trias?",a:"Gefäßwandschaden, Strömungsverlangsamung, Hyperkoagulabilität",d:["Schmerz, Fieber, Entzündung","Immobilität, Dehydration, Adipositas","Tachykardie, Hypotonie, Tachypnoe"],h:"VIRCHOW-Trias = Grundlage Thromboseentstehung",f:"Die VIRCHOW-Trias besteht aus Gefäßwandschaden, Strömungsverlangsamung und ___."},
+{s:"proph",t:"ATS ersetzen nicht",q:"Ersetzen Antithrombosestrümpfe die Frühmobilisation?",a:"Nein – beide werden kombiniert!",d:["Ja, ATS reichen allein","Ja, bei Älteren","Nur bei Immobilität"],h:"ATS = EINE Maßnahme, ersetzt NIE die Mobilisation!"},
+{s:"proph",t:"Pneumonieprophylaxe",q:"Welche Maßnahme gehört zur Pneumonieprophylaxe?",a:"Atemübungen und Triflow-Training",d:["Kompressionsstrümpfe","Wechsellagerung alle 2h","Antikoagulation"],h:"Pneumonie: Atemübungen, Triflow, Frühmobilisation, Inhalation"},
+{s:"proph",t:"Kontrakturprophylaxe",q:"Bei der Kontrakturprophylaxe werden ___ durchgeführt:",a:"Passive und aktive Bewegungsübungen",d:["Nur Bettruhe","Nur Kompression","Nur Atemübungen"],h:"PROM (passiv) + AROM (aktiv) = Gelenkerhaltung"},
+{s:"proph",t:"Intertrigoprophylaxe",q:"Intertrigoprophylaxe verhindert:",a:"Feuchtigkeitsansammlungen in Hautfalten",d:["Sturz","Thrombose","Kontraktur"],h:"Intertigo: Reibung + Feuchtigkeit → Hautpflege, Baumwolleinlagen"},
+{s:"proph",t:"Heparin Thrombose",q:"Heparin s.c. ist eine ___ Thromboseprophylaxe:",a:"Medikamentöse",d:["Physikalische","Diätetische","Chirurgische"],h:"NMH (z.B. Clexane) subkutan = medikamentöse Thromboseprophylaxe"},
+
+// ── KOMMUNIKATION ────────────────────────────────────────────────────────
+{s:"komm",t:"Watzlawick Axiome",q:"Wie viele Axiome hat Watzlawick?",a:"5",d:["3","4","6"],h:"5 Axiome der menschlichen Kommunikation",f:"Watzlawick beschreibt ___ Axiome der Kommunikation."},
+{s:"komm",t:"Axiom 1",q:"Axiom 1 von Watzlawick:",a:"Man kann nicht nicht kommunizieren",d:["Inhalt bestimmt die Beziehung","Kommunikation ist immer digital","Alles ist symmetrisch"],h:"Auch Schweigen = Kommunikation!"},
+{s:"komm",t:"Axiom 2",q:"Axiom 2: Jede Kommunikation hat einen Inhaltsaspekt und einen:",a:"Beziehungsaspekt",d:["Sachaspekt","Gefühlsaspekt","Zeitaspekt"],h:"Beziehung überlagert den Inhalt!",f:"Axiom 2: Jede Kommunikation hat einen Inhalts- und einen ___."},
+{s:"komm",t:"Axiom 4 digital analog",q:"Axiom 4: Digital vs. analog bedeutet:",a:"Verbal (Worte) vs. nonverbal (Mimik, Gestik, Tonfall)",d:["Online vs. persönlich","Schriftlich vs. mündlich","Inhalt vs. Form"],h:"Digital = verbal, Analog = nonverbal"},
+{s:"komm",t:"Beziehungsohr",q:"PFK sagt gereizt: 'Frühstück steht auf dem Tisch.' Patient hört Vorwurf. Welches Ohr?",a:"Beziehungsohr",d:["Sachohr","Appellohr","Selbstoffenbarungsohr"],h:"Beziehungsohr: wie Sender zum Empfänger steht"},
+{s:"komm",t:"Appell",q:"Was gehört zum 'Appell' im 4-Ohren-Modell?",a:"Was der Sender vom Empfänger möchte/will",d:["Sachliche Info","Was Sender über sich verrät","Wie Sender zum Empfänger steht"],h:"Appell = Aufforderung, Bitte, Handlungserwartung"},
+{s:"komm",t:"4 Ohren",q:"Wie viele 'Ohren' hat das Modell von Schulz von Thun?",a:"4",d:["2","3","5"],h:"Sach, Selbstoffenbarung, Beziehung, Appell",f:"Das Modell von Schulz von Thun hat ___ Ohren."},
+{s:"komm",t:"Aphasie Strategie",q:"Bei Aphasie nach Schlaganfall: Welche Kommunikationsstrategie?",a:"Kurze Sätze, Ja/Nein-Fragen, Bilder, Zeit geben",d:["Lauter sprechen","Nur schriftlich","Komplexe Fragen"],h:"Aphasie: kurze Sätze, Bilder, Geduld, Logopädie"},
+
+// ── VALIDATION & BASALE STIMULATION ──────────────────────────────────────
+{s:"valid",t:"Validation Prinzip",q:"Patientin mit Demenz sucht 'Kinder'. Was nach Validation?",a:"Gefühle spiegeln: 'Sie vermissen Ihre Kinder sehr'",d:["Korrigieren: 'Ihre Kinder sind erwachsen'","Lügen: 'Sie kommen gleich'","Ablenken"],h:"Validation: Gefühle SPIEGELN, NICHT korrigieren, NICHT lügen!"},
+{s:"valid",t:"Basale Stimulation Bereiche",q:"Wie viele Wahrnehmungsbereiche hat die Basale Stimulation?",a:"9",d:["5","7","12"],h:"Somatisch, Vibratorisch, Vestibulär, Oral, Olfaktorisch, Gustatorisch, Taktil, Visuell, Auditiv",f:"Die Basale Stimulation hat ___ Wahrnehmungsbereiche."},
+{s:"valid",t:"Olfaktorisch",q:"Olfaktorisch in der Basalen Stimulation betrifft:",a:"Geruchssinn",d:["Geschmackssinn","Gleichgewicht","Berührung"],h:"Olfaktorisch = Geruch. Gustatorisch = Geschmack.",f:"Olfaktorisch betrifft den ___."},
+{s:"valid",t:"Vestibulär",q:"Was bedeutet 'vestibulär'?",a:"Gleichgewichtssinn und Bewegungswahrnehmung",d:["Geruchssinn","Geschmackssinn","Tastsinn"],h:"Vestibulär = Gleichgewicht + Lageänderung"},
+{s:"valid",t:"Ankündigen",q:"Was muss die PFK VOR Basaler Stimulation tun?",a:"Maßnahme ankündigen – auch bei Bewusstseinseinschränkung!",d:["Arzt fragen","Angehörige informieren","Medikamente geben"],h:"IMMER ankündigen! Verbal ansprechen, Berührung ankündigen."},
+{s:"valid",t:"Naomi Feil Phasen",q:"Welche 4 Phasen beschreibt Naomi Feil bei Demenz?",a:"Unglückliche Desorientierung → Zeitverwirrtheit → Repetitive Bewegungen → Vegetieren",d:["Orientierung → Verwirrung → Vegetieren → Tod","Kontakt → Vertrauen → Kommunikation → Ablösung","Orientierung → Identifikation → Nutzung → Ablösung"],h:"Feil: 4 Phasen der Desorientierung bei Demenz"},
+{s:"valid",t:"Gustatorisch",q:"Gustatorisch betrifft den:",a:"Geschmackssinn",d:["Geruchssinn","Gleichgewichtssinn","Sehsinn"],h:"Gustatorisch = Geschmack. Olfaktorisch = Geruch."},
+
+// ── ETHIK ────────────────────────────────────────────────────────────────
+{s:"ethik",t:"Non-Malefizienz",q:"Welches ethische Prinzip bedeutet 'Nicht-Schaden'?",a:"Non-Malefizienz",d:["Autonomie","Benefizienz","Gerechtigkeit"],h:"4 Prinzipien (Beauchamp & Childress)",f:"Das Prinzip des Nicht-Schadens heißt ___."},
+{s:"ethik",t:"4 Prinzipien",q:"Wie viele ethische Prinzipien nach Beauchamp & Childress?",a:"4",d:["3","5","6"],h:"Autonomie, Benefizienz, Non-Malefizienz, Gerechtigkeit",f:"Beauchamp & Childress beschreiben ___ ethische Prinzipien."},
+{s:"ethik",t:"PV Wirksamkeit",q:"Wann wird eine Patientenverfügung wirksam?",a:"Bei Einwilligungsunfähigkeit des Patienten",d:["Immer sofort","Wenn Angehörige zustimmen","Wenn Arzt es anordnet"],h:"PV gilt erst bei Einwilligungsunfähigkeit + passende Situation!"},
+{s:"ethik",t:"Angehörige Entscheidung",q:"Haben Angehörige automatisch Entscheidungsrecht bei Einwilligungsunfähigkeit?",a:"NEIN – nur mit Vorsorgevollmacht oder gesetzlicher Betreuung",d:["Ja, immer","Ja, bei Ehepartnern","Ja, bei Kindern über 18"],h:"PRÜFUNGSFALLE! Keine automatische Entscheidungsbefugnis!"},
+{s:"ethik",t:"PV Notar",q:"Muss eine PV beim Notar beglaubigt werden?",a:"Nein – schriftlich + eigenhändig unterschrieben reicht",d:["Ja, immer","Ja, ab 65 Jahren","Ja, bei schweren Krankheiten"],h:"Kein Notar nötig! PV kann auch mündlich widerrufen werden."},
+{s:"ethik",t:"Ethisches Dilemma",q:"Ein ethisches Dilemma entsteht, wenn:",a:"Zwei ethische Prinzipien im Konflikt stehen",d:["Patient nicht kooperiert","PFK keine Zeit hat","Arzt nicht erreichbar ist"],h:"z.B. Autonomie vs. Benefizienz – keine perfekte Lösung"},
+{s:"ethik",t:"Leichte Demenz EWF",q:"Leichte Demenz = automatisch einwilligungsunfähig?",a:"NEIN – Einwilligungsfähigkeit individuell prüfen!",d:["Ja, immer","Ja, ab Diagnose","Ja, wenn Angehörige es sagen"],h:"Leichte Demenz ≠ EWU! Immer individuell beurteilen!"},
+{s:"ethik",t:"Betreuungsverfügung",q:"Welches Dokument schlägt dem Gericht einen Betreuer vor?",a:"Betreuungsverfügung",d:["Patientenverfügung","Vorsorgevollmacht","Behandlungsvertrag"],h:"Betreuungsverfügung → Amtsgericht → Betreuer bestellen"},
+{s:"ethik",t:"Vorsorgevollmacht",q:"Die Vorsorgevollmacht bevollmächtigt:",a:"Eine Vertrauensperson, Entscheidungen zu treffen wenn Patient nicht kann",d:["Den Arzt zu behandeln","Die PFK zu pflegen","Das Krankenhaus zu entlassen"],h:"VV: Person X bevollmächtigt Person Y",f:"Die ___ bevollmächtigt eine Vertrauensperson zu entscheiden."},
+
+// ── BERATUNG & SCHULUNG ──────────────────────────────────────────────────
+{s:"berat",t:"OARS R",q:"Wofür steht 'R' in OARS?",a:"Reflect (Spiegeln/Paraphrasieren)",d:["Reaktion","Ressourcen","Rückfragen"],h:"O=Open questions, A=Affirm, R=Reflect, S=Summarize",f:"In OARS steht R für ___."},
+{s:"berat",t:"Widerstand MG",q:"Bei Motivierender Gesprächsführung soll Widerstand:",a:"Aufgenommen werden (nicht bekämpft!)",d:["Direkt bekämpft werden","Ignoriert werden","Dokumentiert werden"],h:"Widerstand aufnehmen = Information nutzen. Bekämpfen verstärkt ihn!"},
+{s:"berat",t:"§7a SGB XI",q:"§7a SGB XI regelt:",a:"Anspruch auf individuelle Pflegeberatung",d:["Schweigepflicht","Haftungsrecht","Betreuungsrecht"],h:"§7a SGB XI: Pflegeberatung durch Pflegestützpunkte",f:"§7a SGB XI regelt den Anspruch auf individuelle ___."},
+{s:"berat",t:"Diskrepanz MG",q:"Diabetiker lehnt Diät ab. Welche MG-Strategie?",a:"Diskrepanz aufzeigen: Ziel (gesund bleiben) vs. Verhalten (Diät ablehnen)",d:["Direkt überzeugen","Thema wechseln","Angehörige einschalten"],h:"Diskrepanz = Bewusstsein für Widerspruch zwischen Ziel und Verhalten"},
+{s:"berat",t:"MG 4 Prinzipien",q:"Wie viele Grundprinzipien hat die Motivierende Gesprächsführung?",a:"4",d:["3","5","6"],h:"Empathie, Diskrepanz, Widerstand aufnehmen, Selbstwirksamkeit",f:"Die Motivierende Gesprächsführung hat ___ Grundprinzipien."},
+{s:"berat",t:"Affirm OARS",q:"Was bedeutet 'Affirm' in OARS?",a:"Stärken und Ressourcen des Patienten bestätigen/loben",d:["Anweisungen geben","Abschluss der Beratung","Abstinenz fördern"],h:"Affirm = bestätigen, loben: 'Das machen Sie gut'"},
+{s:"berat",t:"Offene Fragen",q:"Offene Fragen beginnen mit:",a:"W-Wörtern (Wie, Was, Warum, Welche)",d:["Haben Sie...","Ist es...","Können Sie..."],h:"Offen: 'Wie erleben Sie...' Geschlossen: 'Haben Sie...'"},
+{s:"berat",t:"Beratung vs Schulung",q:"Unterschied: Beratung zielt auf ___, Schulung auf ___:",a:"Entscheidungsfindung; Wissensvermittlung/Kompetenzerwerb",d:["Anleitung; Beratung","Therapie; Diagnose","Dokumentation; Evaluation"],h:"Beratung = Entscheidung unterstützen. Schulung = Wissen/Können vermitteln."},
+{s:"berat",t:"Anleitung Definition",q:"Anleitung in der Pflege bedeutet:",a:"Praktische Handlung vormachen, üben, kontrollieren",d:["Nur theoretisch erklären","Nur schriftlich informieren","Nur Arzt informieren"],h:"Anleitung: Demonstration → gemeinsam üben → Patient macht allein → Feedback"},
+{s:"berat",t:"Selbstwirksamkeit MG",q:"Patientin: 'Ich schaffe das nicht.' Beste MG-Antwort:",a:"Vergangene Erfolge benennen: 'Sie haben Ähnliches schon gemeistert'",d:["'Das schaffen Sie schon!'","'Dann lassen wir das.'","'Sie müssen das schaffen.'"],h:"Selbstwirksamkeit stärken: Ressourcen und Erfolge aufzeigen"},
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOCK 2: TAG 20–29 (Herz, Diabetes, Atemwege, Niere, Chirurgie)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── HERZINSUFFIZIENZ ─────────────────────────────────────────────────────
+{s:"hi",t:"NYHA I",q:"NYHA-Stadium I bedeutet:",a:"Herzerkrankung ohne Beschwerden bei normaler Belastung",d:["Beschwerden bei stärkerer Belastung","Beschwerden bei leichter Belastung","Beschwerden in Ruhe"],h:"NYHA I = keine Symptome bei normaler Aktivität."},
+{s:"hi",t:"NYHA III",q:"NYHA-Stadium III bedeutet:",a:"Beschwerden bei leichter Belastung (z.B. Anziehen)",d:["Keine Beschwerden","Beschwerden bei stärkerer Belastung","Beschwerden in Ruhe"],h:"NYHA: I=keine, II=stärkere Belastung, III=leichte Belastung, IV=Ruhe",f:"NYHA III: Beschwerden bei ___ Belastung."},
+{s:"hi",t:"NYHA IV",q:"NYHA-Stadium IV bedeutet:",a:"Beschwerden in Ruhe (Ruhedyspnoe)",d:["Keine Beschwerden","Nur bei stärkerer Belastung","Nur bei leichter Belastung"],h:"NYHA IV = schwerste Stufe: Ruhedyspnoe!"},
+{s:"hi",t:"Linksherzinsuffizienz",q:"Bei Linksherzinsuffizienz staut sich das Blut in:",a:"Der Lunge (Dyspnoe, Lungenödem, Husten)",d:["Den Beinen","Der Leber","Dem Gehirn"],h:"Links=Lunge! Rechts=Körper (Ödeme, Stauungsleber).",f:"Bei Linksherzinsuffizienz staut sich das Blut in der ___."},
+{s:"hi",t:"Rechtsherzinsuffizienz",q:"Typische Symptome der Rechtsherzinsuffizienz:",a:"Beinödeme, Halsvenenstauung, Stauungsleber, Aszites",d:["Dyspnoe und Lungenödem","Kopfschmerzen und Schwindel","Nur Müdigkeit"],h:"Rechts=Körperstau: Ödeme, Halsvenen gestaut, Leber gestaut"},
+{s:"hi",t:"Tägliches Wiegen",q:"Warum ist tägliches Wiegen bei Herzinsuffizienz wichtig?",a:"Um Wassereinlagerungen (Ödeme) frühzeitig zu erkennen",d:["Zur Ernährungskontrolle","Zur Medikamentendosierung","Wegen Sturzgefahr"],h:">1 kg/Tag Zunahme = Flüssigkeitsretention!"},
+{s:"hi",t:"Orthopnoe",q:"Orthopnoe bedeutet:",a:"Atemnot im Liegen – Patient muss mit erhöhtem Oberkörper schlafen",d:["Atemnot bei Belastung","Nächtliches Husten","Atemnot beim Essen"],h:"Orthopnoe: Besserung durch Aufsetzen/OKH",f:"___ bedeutet Atemnot im Liegen."},
+{s:"hi",t:"Häufigste Ursache HI",q:"Häufigste Ursache der Herzinsuffizienz:",a:"KHK (Koronare Herzkrankheit)",d:["Diabetes","Pneumonie","Niereninsuffizienz"],h:"KHK = häufigste Ursache! Weitere: Hypertonie, Herzinfarkt, Klappenfehler"},
+{s:"hi",t:"Kardiale Ödeme",q:"Kardiale Ödeme sind:",a:"Weich und dellbildend (Fingertest: Delle bleibt)",d:["Hart und derb","Schmerzlos und rot","Nur einseitig"],h:"Kardial = weich, dellbildend. Lymphödem = derb, nicht dellbildend."},
+{s:"hi",t:"Nykturie bei HI",q:"Warum haben HI-Patienten Nykturie?",a:"Nachts im Liegen werden Nieren besser durchblutet",d:["Wegen Medikamenten","Wegen zu viel Trinken","Wegen Blasenschwäche"],h:"Im Liegen: venöser Rückstrom steigt"},
+{s:"hi",t:"Flüssigkeitsbilanz",q:"Bei dekompensierter HI muss:",a:"Ein- und Ausfuhr bilanziert werden",d:["Viel getrunken werden","Nur gewogen werden","Nichts besonderes"],h:"Flüssigkeitsbilanz + tägliches Wiegen = die 2 wichtigsten Maßnahmen"},
+
+// ── KHK & ANGINA PECTORIS ────────────────────────────────────────────────
+{s:"khk",t:"KHK Definition",q:"KHK ist eine Verengung der:",a:"Herzkranzgefäße durch Arteriosklerose",d:["Lungenarterien","Halsschlagader","Nierengefäße"],h:"KHK = Koronare Herzkrankheit",f:"KHK ist eine Verengung der ___ durch Arteriosklerose."},
+{s:"khk",t:"Stabile AP",q:"Stabile Angina pectoris tritt auf bei:",a:"Belastung, verschwindet in Ruhe oder nach Nitrospray",d:["In Ruhe","Nur nachts","Nur morgens"],h:"Stabil: bei Belastung, <20 Min., bessert sich mit Nitro"},
+{s:"khk",t:"Instabile AP",q:"Instabile Angina pectoris ist ein:",a:"Notfall! AP auch in Ruhe, Vorstufe des Herzinfarkts",d:["Harmloses Symptom","Chronischer Zustand","Nur bei Belastung"],h:"Instabil = wie Herzinfarkt behandeln bis Gegenteil bewiesen!"},
+{s:"khk",t:"AP Symptome",q:"Typische Angina-pectoris-Symptome:",a:"Retrosternaler Druckschmerz mit Ausstrahlung in Arm/Kiefer",d:["Nur Kopfschmerzen","Bauchschmerzen rechts","Rückenschmerz"],h:"Retrosternal + Ausstrahlung + Engegefühl + Angst"},
+{s:"khk",t:"KHK Risikofaktoren",q:"Welcher ist KEIN KHK-Risikofaktor?",a:"Regelmäßiger Sport",d:["Rauchen","Hypertonie","Diabetes mellitus"],h:"RF: Rauchen, Hypertonie, DM, Adipositas, Cholesterin, Alter"},
+
+// ── HERZINFARKT ──────────────────────────────────────────────────────────
+{s:"hinfo",t:"STEMI",q:"STEMI steht für:",a:"ST-Hebungsinfarkt (gesamte Wanddicke betroffen)",d:["Subtotaler Infarkt","Stummer Infarkt","Subendokardialer Infarkt"],h:"STEMI = ST-Elevation Myocardial Infarction",f:"STEMI steht für ___-Hebungsinfarkt."},
+{s:"hinfo",t:"Herzinfarkt Symptome",q:"Typische Herzinfarkt-Symptome:",a:"Vernichtungsschmerz retrosternal, Ausstrahlung, Kaltschweißigkeit, Todesangst",d:["Nur Kopfschmerzen","Nur Übelkeit","Nur Rückenschmerzen"],h:"Vernichtungsschmerz >20 Min. Nitro hilft NICHT!"},
+{s:"hinfo",t:"ASS Notfall",q:"ASS-Dosis beim akuten Herzinfarkt:",a:"500 mg i.v.",d:["100 mg oral","50 mg oral","1000 mg oral"],h:"Notfall: ASS 500 mg i.v. Prophylaxe: 100 mg/d oral",f:"Beim Herzinfarkt: ASS ___ mg i.v."},
+{s:"hinfo",t:"Erste Maßnahme",q:"Erste Maßnahme bei Verdacht auf Herzinfarkt:",a:"Notruf 112, beruhigen, Oberkörper erhöht lagern",d:["Abwarten","Erst Blutdruck messen","Nur EKG schreiben"],h:"Sofort 112! OKH, O2, nicht alleine lassen"},
+{s:"hinfo",t:"PCI",q:"PCI beim Herzinfarkt ist:",a:"Herzkatheter mit Stent – Goldstandard-Therapie",d:["Medikamentöse Therapie","Physiotherapie","Bypass-OP"],h:"PCI = Goldstandard bei STEMI (<120 Min.)"},
+{s:"hinfo",t:"Stummer Infarkt",q:"Stummer Herzinfarkt kommt besonders vor bei:",a:"Diabetikern (Polyneuropathie unterdrückt Schmerz)",d:["Jungen Sportlern","Frauen unter 30","Kindern"],h:"Diabetische Neuropathie: kein Schmerz trotz Infarkt!"},
+
+// ── HYPERTONIE ───────────────────────────────────────────────────────────
+{s:"hyper",t:"Grenzwert",q:"Ab welchem Wert spricht man von Hypertonie?",a:"Ab 140/90 mmHg",d:["Ab 120/80","Ab 130/85","Ab 160/100"],h:"Grad 1: ab 140/90. Krise: >180/120",f:"Hypertonie liegt vor ab ___/90 mmHg."},
+{s:"hyper",t:"Hypertensive Krise",q:"Hypertensive Krise: Welche Werte?",a:">180/120 mmHg (Notfall!)",d:[">140/90",">160/100",">200/140"],h:"Hypertensive Krise = Organschäden möglich!"},
+{s:"hyper",t:"RR nicht schnell senken",q:"Warum darf der RR in der Krise nicht zu schnell gesenkt werden?",a:"Gefahr von Organminderperfusion (Gehirn, Niere)",d:["Weil Medikament dann nicht wirkt","Kein Grund","Weil es warm wird"],h:"Max. 25% in der ersten Stunde. Zu schnell: Hirninfarkt!"},
+{s:"hyper",t:"Folgeerkrankungen",q:"Folgen unbehandelter Hypertonie:",a:"Schlaganfall, Herzinfarkt, Niereninsuffizienz, Netzhautschäden",d:["Nur Kopfschmerzen","Keine Folgen","Nur Müdigkeit"],h:"Hypertonie = stiller Killer: lange symptomlos, dann Organschäden"},
+
+// ── DIABETES MELLITUS ────────────────────────────────────────────────────
+{s:"dm",t:"Typ 1 vs Typ 2",q:"Hauptunterschied Diabetes Typ 1 vs. Typ 2:",a:"Typ 1: Autoimmun (absoluter Insulinmangel). Typ 2: Insulinresistenz",d:["Typ 1: bei Älteren","Kein Unterschied","Typ 1: heilbar"],h:"Typ 1: absolut, Autoimmun. Typ 2: relativ, Resistenz.",f:"Diabetes Typ 1 ist eine ___-Erkrankung."},
+{s:"dm",t:"Hypoglykämie",q:"Hypoglykämie liegt vor bei BZ unter:",a:"70 mg/dl",d:["100 mg/dl","120 mg/dl","50 mg/dl"],h:"BZ <70: Schwitzen, Zittern, Heißhunger, Verwirrtheit",f:"Hypoglykämie: BZ unter ___ mg/dl."},
+{s:"dm",t:"Hypo wach",q:"Sofortmaßnahme bei Hypoglykämie (Patient WACH):",a:"20 g schnelle Kohlenhydrate oral (Traubenzucker, Saft)",d:["Insulin spritzen","Glucagon i.m.","Abwarten"],h:"WACH: oral. BEWUSSTLOS: Glucagon i.m. + 112!"},
+{s:"dm",t:"Hypo bewusstlos",q:"Sofortmaßnahme bei Hypoglykämie (Patient BEWUSSTLOS):",a:"Glucagon i.m. + Notruf (NICHTS oral: Aspirationsgefahr!)",d:["Traubenzucker oral","Insulin spritzen","Beine hochlagern"],h:"NICHTS oral bei Bewusstlosigkeit!"},
+{s:"dm",t:"Diabetischer Fuß",q:"Beim diabetischen Fuß KONTRAINDIZIERT:",a:"Wärmflasche oder Heizdecke (Verbrennungsgefahr!)",d:["Tägliche Inspektion","Bequemes Schuhwerk","Hautpflege"],h:"Polyneuropathie: Patient spürt Hitze nicht!"},
+{s:"dm",t:"Ketoazidose",q:"Diabetische Ketoazidose entsteht bei:",a:"Absolutem Insulinmangel (Fettabbau, Ketonkörper, Azidose)",d:["Zu viel Insulin","Zu viel Trinken","Zu viel Bewegung"],h:"Kußmaul-Atmung, Acetongeruch, Bewusstlosigkeit = Notfall!"},
+{s:"dm",t:"Kußmaul-Atmung",q:"Kußmaul-Atmung ist:",a:"Tiefe, regelmäßige Atmung zur CO2-Abatmung bei Azidose",d:["Flache schnelle Atmung","Unregelmäßig","Normal"],h:"Kußmaul: tief + regelmäßig = Säure-Kompensation",f:"___-Atmung: tief und regelmäßig bei Azidose."},
+{s:"dm",t:"HbA1c",q:"HbA1c zeigt:",a:"Durchschnittlichen BZ der letzten 8–12 Wochen",d:["Aktuellen BZ","Insulinspiegel","Nierenfunktion"],h:"HbA1c = Blutzucker-Gedächtnis. Ziel: <7%",f:"HbA1c zeigt den BZ der letzten ___–12 Wochen."},
+
+// ── THROMBOSE & ANÄMIE ───────────────────────────────────────────────────
+{s:"throm",t:"TVT Symptome",q:"Typische Symptome einer TVT:",a:"Einseitige Schwellung, Schmerz, Rötung, Überwärmung",d:["Beidseitige Ödeme","Nur Hautveränderungen","Fieber allein"],h:"TVT: EINSEITIG! Meyer-Zeichen, Homans-Zeichen"},
+{s:"throm",t:"Homans-Zeichen",q:"Was ist das Homans-Zeichen?",a:"Wadenschmerz bei Dorsalflexion des Fußes",d:["Schwellung des Beins","Rötung der Haut","Fieber"],h:"Fuß nach oben ziehen: Wadenschmerz = positiv",f:"Das ___-Zeichen: Wadenschmerz bei Dorsalflexion."},
+{s:"throm",t:"TVT nicht massieren",q:"Was darf bei TVT-Verdacht NIEMALS gemacht werden?",a:"Massage des betroffenen Beins (Emboliegefahr!)",d:["Bein hochlagern","Arzt informieren","Kompressionsstrümpfe"],h:"NICHT massieren! Thrombus könnte sich lösen!"},
+{s:"throm",t:"Eisenmangelanämie",q:"Häufigste Anämieform:",a:"Eisenmangelanämie",d:["Sichelzellanämie","Aplastische Anämie","Hämolytische Anämie"],h:"Eisenmangel = häufigste Ursache weltweit",f:"Die häufigste Anämieform ist die ___."},
+{s:"throm",t:"Anämie Symptome",q:"Allgemeine Anämie-Symptome:",a:"Blässe, Müdigkeit, Tachykardie, Schwindel, Belastungsdyspnoe",d:["Nur Kopfschmerzen","Nur Fieber","Keine Symptome"],h:"Hb runter: O2-Transport runter, Herz kompensiert mit Tachykardie"},
+
+// ── NIERE & HWI ──────────────────────────────────────────────────────────
+{s:"niere",t:"Dialyse Stadium",q:"Ab welchem Stadium wird Dialyse nötig?",a:"Stadium 5 (GFR <15 ml/min)",d:["Stadium 2","Stadium 3","Stadium 4"],h:"5 Stadien nach GFR. Stadium 5 = terminal",f:"Dialyse wird ab Stadium ___ nötig."},
+{s:"niere",t:"HWI häufigste nosokomiale",q:"Häufigste nosokomiale Infektion:",a:"Harnwegsinfekt",d:["Pneumonie","Sepsis","Wundinfektion"],h:"HWI = häufigste nosokomiale INFEKTION! Pneumonie = häufigste TODESURSACHE!"},
+{s:"niere",t:"Katheter Risiko",q:"Wichtigster Risikofaktor für katheterassoziierten HWI:",a:"Liegedauer des Katheters",d:["Alter","Geschlecht","Ernährung"],h:"Je länger der Katheter liegt, desto höher das Risiko!"},
+{s:"niere",t:"HWI Prophylaxe",q:"Beste HWI-Prophylaxe:",a:"Ausreichend trinken (mind. 1,5 l/d)",d:["Antibiotika vorbeugend","Katheter einlegen","Bettruhe"],h:"Trinken = Blase durchspülen = beste Prophylaxe"},
+{s:"niere",t:"Bilanz Niere",q:"Bei Niereninsuffizienz besonders wichtig:",a:"Flüssigkeitsbilanz (Ein- und Ausfuhr exakt dokumentieren)",d:["Viel Sport","Viel trinken immer","Kalorienreiche Ernährung"],h:"Flüssigkeit wird nicht ausgeschieden: Bilanz führen!"},
+
+// ── OSTEOPOROSE & RHEUMA ─────────────────────────────────────────────────
+{s:"osteo",t:"Osteoporose",q:"Osteoporose ist:",a:"Systemische Knochenerkrankung mit verminderter Knochendichte",d:["Gelenkentzündung","Muskelerkrankung","Nervenkrankheit"],h:"Poröser Knochen. Häufigste Knochenkrankheit!"},
+{s:"osteo",t:"Risikogruppe",q:"Höchste Osteoporose-Gefahr bei:",a:"Frauen nach der Menopause (Östrogenmangel)",d:["Jungen Männern","Kindern","Sportlern"],h:"Postmenopausal: Östrogen runter = Knochenabbau hoch"},
+{s:"osteo",t:"Spontanfraktur",q:"Bei Osteoporose kann eine Fraktur auftreten:",a:"Auch ohne Sturz (Spontanfraktur durch Alltagsbelastung!)",d:["Nur bei schwerem Sturz","Nur bei Unfall","Nie"],h:"Spontanfraktur = OHNE adäquates Trauma! Typisch!"},
+{s:"osteo",t:"Arthrose vs RA",q:"Arthrose ist ___, RA ist ___:",a:"Degenerativ (Verschleiß); autoimmun-entzündlich",d:["Beides entzündlich","Beides degenerativ","Arthrose = entzündlich"],h:"Arthrose = Knorpelverschleiß. RA = Autoimmun."},
+{s:"osteo",t:"Morgensteifigkeit",q:"Typisches Frühsymptom der Rheumatoiden Arthritis:",a:"Morgensteifigkeit der Gelenke (>30 Minuten!)",d:["Abendliche Steifigkeit","Nur Schmerz bei Belastung","Kein Frühsymptom"],h:"RA: Morgensteifigkeit >30 Min. Arthrose: Anlaufschmerz."},
+
+// ── COPD & ASTHMA ────────────────────────────────────────────────────────
+{s:"copd",t:"COPD vs Asthma",q:"COPD ist im Gegensatz zu Asthma:",a:"Irreversibel",d:["Reversibel","Heilbar","Nur bei Kindern"],h:"COPD: irreversibel. Asthma: reversibel!",f:"COPD ist ___, Asthma ist reversibel."},
+{s:"copd",t:"GOLD",q:"COPD-Stadien heißen:",a:"GOLD I–IV",d:["NYHA I–IV","Norton I–IV","Braden I–IV"],h:"GOLD nach FEV1-Wert",f:"COPD-Stadien: ___ I–IV."},
+{s:"copd",t:"AHA",q:"AHA-Symptome der COPD:",a:"Auswurf, Husten, Atemnot",d:["Angst, Herzrasen, Apnoe","Appetitlosigkeit, Haarausfall, Anämie","Asthma, Hypertonie, Allergie"],h:"A=Auswurf, H=Husten, A=Atemnot",f:"AHA: ___, Husten, Atemnot."},
+{s:"copd",t:"Lippenbremse",q:"Die Lippenbremse verhindert:",a:"Den Atemwegkollaps bei der Ausatmung",d:["Einatmungsprobleme","Schleim","Bluthochdruck"],h:"Gespitzte Lippen: erhöhter Druck hält Atemwege offen"},
+{s:"copd",t:"Kutschersitz",q:"Der Kutschersitz entlastet die:",a:"Atemhilfsmuskulatur",d:["Beinmuskulatur","Rückenmuskulatur","Bauchmuskulatur"],h:"Arme aufstützen: Atemhilfsmuskulatur entlastet"},
+{s:"copd",t:"O2 Gefahr",q:"Zu viel O2 bei schwerer COPD ist gefährlich weil:",a:"Der Atemantrieb über O2-Mangel gesteuert wird (Atemstillstand droht!)",d:["O2 ist nie gefährlich","Hautschäden","Blutdruck steigt"],h:"Bei schwerer COPD: Atemantrieb über niedrigen O2!"},
+{s:"copd",t:"Inhalationsreihenfolge",q:"Richtige Inhalationsreihenfolge:",a:"Erst Bronchodilatator, dann Kortikoid",d:["Erst Kortikoid","Egal","Beide gleichzeitig"],h:"Bronchodilatator ZUERST (öffnet). Dann Kortikoid (dringt tief ein)."},
+{s:"copd",t:"Soorprophylaxe",q:"Nach Kortikoid-Inhalation muss:",a:"Der Mund ausgespült werden (Soorprophylaxe!)",d:["Nichts passieren","Wasser getrunken werden","Zähne geputzt werden"],h:"Sonst Mundsoor (Pilzinfektion)!",f:"Nach Kortikoid-Inhalation: Mund ___ (Soorprophylaxe)."},
+{s:"copd",t:"Reliever",q:"Reliever bei Asthma sind:",a:"Bedarfsmedikamente für akute Anfälle (z.B. Salbutamol)",d:["Dauermedikamente","Antibiotika","Schmerzmittel"],h:"Reliever = Bedarfs/Notfall. Controller = Dauer."},
+{s:"copd",t:"Rauchstopp",q:"Wichtigste Maßnahme bei COPD:",a:"Rauchstopp!",d:["Antibiotika","Dauerhaft O2","Operation"],h:"Einzige Maßnahme die Progression verlangsamt!"},
+{s:"copd",t:"Fassthorax",q:"Fassthorax bei COPD entsteht durch:",a:"Chronische Überblähung der Lunge (Emphysem)",d:["Wassereinlagerung","Muskelaufbau","Wirbelsäulenverformung"],h:"Überblähte Lunge: Brustkorb tonnenförmig"},
+
+// ── PNEUMONIE & LUNGENEMBOLIE ────────────────────────────────────────────
+{s:"pneu",t:"Nosokomiale Pneumonie",q:"Nosokomiale Pneumonie bedeutet:",a:"Im Krankenhaus erworben (ab 48h nach Aufnahme)",d:["Zuhause erworben","Angeboren","Chronische Bronchitis"],h:"Nosokomial = im KH. Häufigste nosokomiale TODESURSACHE!",f:"___ Pneumonie wird im Krankenhaus erworben."},
+{s:"pneu",t:"LE Symptome",q:"Leitsymptome der akuten Lungenembolie:",a:"Plötzliche Dyspnoe, Thoraxschmerz, Tachykardie, Todesangst",d:["Langsame Atemnot","Nur Husten","Nur Fieber"],h:"LE = NOTFALL! Plötzlich + Dyspnoe + Schmerz = sofort 112!"},
+{s:"pneu",t:"LE Ursache",q:"Häufigste Ursache der Lungenembolie:",a:"Tiefe Beinvenenthrombose (Thrombus wandert in Lunge)",d:["Rauchen allein","Fettleibigkeit allein","Diabetes allein"],h:"TVT: Thrombus löst sich, verschließt Lungenarterie"},
+{s:"pneu",t:"Pneumonie Prophylaxe",q:"Wichtigste pflegerische Pneumonieprophylaxe:",a:"Atemübungen, Triflow, Frühmobilisation, OKH",d:["Nur Antibiotika","Nur Bettruhe","Nur Flüssigkeit"],h:"10x/Stunde tief einatmen! Triflow! Mobilisation!"},
+
+// ── PRÄ-/POSTOPERATIV ────────────────────────────────────────────────────
+{s:"periop",t:"Präop",q:"Was gehört zur präoperativen Pflege?",a:"Aufklärung, Nüchternheit, Thromboseprophylaxe, OP-Checkliste",d:["Nur Medikamente","Nur Vitalzeichen","Mobilisieren"],h:"Aufklärung (informed consent!), Nüchternheit, Rasur, ATS"},
+{s:"periop",t:"Nüchternheit",q:"Nüchternheitsregeln vor OP:",a:"6 Stunden feste Nahrung, 2 Stunden klare Flüssigkeit",d:["12h komplett nüchtern","1h nüchtern","Essen bis kurz vor OP"],h:"6-2-Regel: 6h fest, 2h klar",f:"Präoperativ: ___ Stunden nüchtern für feste Nahrung."},
+{s:"periop",t:"Postop erste Maßnahme",q:"Erste Maßnahme nach OP:",a:"Vitalzeichenkontrolle",d:["Sofort mobilisieren","Essen anbieten","Angehörige informieren"],h:"RR, Puls, SpO2, Temperatur, Bewusstsein, Wunde, Drainage"},
+{s:"periop",t:"Postop Komplikationen",q:"Typische postoperative Komplikationen:",a:"Nachblutung, Thrombose, Pneumonie, Wundinfektion, Ileus",d:["Nur Schmerzen","Keine möglich","Nur Übelkeit"],h:"Postop engmaschig: Nachblutung, Thrombose, Pneumonie, Infektion, Ileus"},
+
+// ── WUNDVERSORGUNG & STOMA ───────────────────────────────────────────────
+{s:"wund",t:"3 Phasen",q:"Die 3 Phasen der Wundheilung:",a:"Exsudation (Reinigung), Granulation (Aufbau), Epithelisierung (Verschluss)",d:["Entzündung, Heilung, Narbe","Blutung, Schorf, Narbe","Infektion, Reinigung, Verschluss"],h:"Exsudation, Granulation, Epithelisierung",f:"Die 3 Wundheilungsphasen: Exsudation, Granulation, ___."},
+{s:"wund",t:"Feucht",q:"Moderne Wundversorgung ist:",a:"Feucht (fördert Zellmigration und Heilung)",d:["Trocken","Offen an der Luft","Immer mit Pflaster"],h:"Feucht > trocken! Hydrokolloid, Alginat etc."},
+{s:"wund",t:"Ileostoma",q:"Ileostoma-Stuhl ist:",a:"Flüssig und aggressiv für die Haut (sorgfältiger Hautschutz!)",d:["Fest und mild","Gleich wie Kolostoma","Nur bei Erwachsenen anders"],h:"Ileostoma (Dünndarm): flüssig + enzymatisch aggressiv",f:"Ileostoma-Stuhl ist ___ als Kolostoma-Stuhl."},
+{s:"wund",t:"PEG",q:"Was ist eine PEG-Sonde?",a:"Ernährungssonde direkt in den Magen (perkutane endoskopische Gastrostomie)",d:["Blasenkatheter","Venenkatheter","Atemhilfe"],h:"PEG: langfristige enterale Ernährung"},
+{s:"wund",t:"Entzündungszeichen",q:"5 lokale Entzündungszeichen einer Wundinfektion:",a:"Rubor (Rötung), Tumor (Schwellung), Calor (Wärme), Dolor (Schmerz), Functio laesa",d:["Nur Eiter","Nur Fieber","Keine sichtbaren"],h:"5 Kardinalsymptome der Entzündung"},
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOCK 3: TAG 30–38 (Sepsis, MRSA, Pharmakologie)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── 6-R-REGEL & ADME ─────────────────────────────────────────────────────
+{s:"6r",t:"Erstes R",q:"Welches ist das ERSTE R der 6-R-Regel?",a:"Richtiger Patient",d:["Richtiges Medikament","Richtige Dosis","Richtige Dokumentation"],h:"Erst Patient identifizieren! Name, Geburtsdatum, Armband."},
+{s:"6r",t:"Dokumentation wann",q:"Wann wird die Medikamentengabe dokumentiert?",a:"Unmittelbar NACH der Gabe",d:["Vor der Gabe","Am Schichtende","Gleichzeitig"],h:"6. R = Dokumentation NACH Gabe. Nie vorher!",f:"Medikamentengabe wird ___ der Gabe dokumentiert."},
+{s:"6r",t:"ADME",q:"Wofür steht ADME?",a:"Absorption, Distribution, Metabolismus, Elimination",d:["Anwendung, Dosierung, Monitoring, Evaluation","Aufnahme, Dosis, Menge, Ende","Analyse, Dosierung, Messung, Ergebnis"],h:"A=Aufnahme, D=Verteilung, M=Abbau(Leber), E=Ausscheidung(Niere)"},
+{s:"6r",t:"First-Pass",q:"Der First-Pass-Effekt erklärt warum:",a:"Orale Dosen oft höher sind als i.v.-Dosen",d:["I.v. schneller wirkt","Tabletten besser schmecken","Injektionen schmerzhaft sind"],h:"Leber baut orale Medikamente teilweise ab bevor sie wirken"},
+{s:"6r",t:"Therapeutische Breite",q:"Enge therapeutische Breite bedeutet:",a:"Geringer Abstand zwischen Wirk- und Toxikdosis (gefährlich!)",d:["Breit wirkend","Viele Indikationen","Wenig Nebenwirkungen"],h:"Eng = gefährlich! Digitalis, Lithium, Marcumar. Engmaschiges Monitoring!",f:"___ therapeutische Breite bedeutet geringer Abstand zwischen Wirk- und Toxikdosis."},
+{s:"6r",t:"Niereninsuffizienz Med",q:"Bei Niereninsuffizienz muss bei Medikamenten:",a:"Die Dosis angepasst werden (Elimination gestört → Kumulation!)",d:["Nichts beachtet werden","Doppelte Dosis gegeben werden","Nur oral gegeben werden"],h:"Niere = Hauptausscheidungsweg. Bei NI: Medikamente kumulieren!"},
+{s:"6r",t:"6R komplett",q:"Nennen Sie alle 6 R:",a:"Patient, Medikament, Dosis, Zeitpunkt, Weg, Dokumentation",d:["Patient, Arzt, Dosis, Zeit, Weg, Kontrolle","Patient, Medikament, Dosis, Ort, Art, Protokoll","Medikament, Dosis, Weg, Zeit, Doku, Kontrolle"],h:"Richtiger Patient · Richtiges Medikament · Richtige Dosis · Richtiger Zeitpunkt · Richtiger Weg · Richtige Dokumentation"},
+{s:"6r",t:"Polypharmazie",q:"Polypharmazie bei älteren Menschen bedeutet:",a:"Einnahme vieler Medikamente gleichzeitig → hohes Wechselwirkungsrisiko",d:["Nur ein Medikament nehmen","Wenig Medikamente","Keine Nebenwirkungen"],h:"Ab 5+ Medikamente: Polypharmazie. Wechselwirkungen und NW steigen!"},
+
+// ── HERZMEDIKAMENTE ──────────────────────────────────────────────────────
+{s:"herzmed",t:"Digitalis Puls",q:"Digitalis: Puls 54/min. Was tun?",a:"NICHT geben, Arzt informieren und dokumentieren",d:["Normal geben","Dosis halbieren","In 1h nochmal messen"],h:"Puls <60/min → NICHT geben! Bradykardie = Intoxikationszeichen!"},
+{s:"herzmed",t:"ACE-Hemmer NW",q:"Typischste NW von ACE-Hemmern:",a:"Trockener Reizhusten",d:["Bradykardie","Gelbsehen","Durchfall"],h:"Bradykinin-Akkumulation → Husten. Bei Husten: ARB als Alternative.",f:"Typischste NW von ACE-Hemmern: trockener ___."},
+{s:"herzmed",t:"Betablocker absetzen",q:"Betablocker dürfen nie ___ abgesetzt werden:",a:"Abrupt (Rebound-Krise: RR-Krise, Angina pectoris!)",d:["Morgens","Mit Essen","Langsam"],h:"Immer AUSSCHLEICHEN! Nie abrupt!",f:"Betablocker nie ___ absetzen (Rebound-Gefahr!)."},
+{s:"herzmed",t:"Furosemid Elektrolyt",q:"Furosemid: Welche Elektrolytstörung überwachen?",a:"Hypokaliämie (Kaliumverlust)",d:["Hyperkalzämie","Hypernatriämie","Hypermagnesiämie"],h:"Schleifendiuretikum → Kaliumverlust! Elektrolyte + Gewicht täglich!"},
+{s:"herzmed",t:"Digitalisintoxikation",q:"Gelbsehen + Übelkeit nach Digitalis = Verdacht auf:",a:"Digitalisintoxikation – sofort Arzt!",d:["Magengrippe","Normale NW","Allergie"],h:"Gelbsehen = klassisches Zeichen! Enge therapeutische Breite!"},
+{s:"herzmed",t:"Digitalis Wirkung",q:"Digitalis wirkt ___ chronotrop:",a:"Negativ (senkt die Herzfrequenz)",d:["Positiv","Neutral","Wechselnd"],h:"Negativ chronotrop = HF↓. Positiv inotrop = Kontraktionskraft↑.",f:"Digitalis wirkt ___ chronotrop (HF senkend)."},
+{s:"herzmed",t:"BB Asthma KI",q:"Betablocker sind kontraindiziert bei:",a:"Asthma bronchiale (Bronchospasmus-Gefahr!)",d:["Hypertonie","Herzinsuffizienz","Diabetes"],h:"Nicht-selektive BB blockieren Beta-2 in der Lunge → Bronchospasmus!"},
+{s:"herzmed",t:"ACE-Hemmer 1.Wahl",q:"ACE-Hemmer sind 1. Wahl bei:",a:"Herzinsuffizienz",d:["Asthma","Epilepsie","Demenz"],h:"ACE-Hemmer (z.B. Ramipril): Nachlastsenkung + RAAS-Hemmung"},
+{s:"herzmed",t:"Furosemid Zeitpunkt",q:"Furosemid wird am besten gegeben:",a:"Morgens (nicht abends → sonst Nykturie + Sturzgefahr!)",d:["Abends","Nachts","Egal"],h:"Morgens geben! Abends → nächtliches Wasserlassen → Sturzgefahr!"},
+
+// ── ANTIKOAGULANTIEN ─────────────────────────────────────────────────────
+{s:"antiko",t:"INR Marcumar",q:"INR-Zielwert bei Marcumar (Vorhofflimmern):",a:"2–3",d:["1–1,5","3–4","4–5"],h:"VHF/TVT/LE: INR 2–3. Mechanische Klappe: 2,5–3,5.",f:"Marcumar INR-Ziel bei VHF: ___–3."},
+{s:"antiko",t:"Heparin Antidot",q:"Antidot für unfraktioniertes Heparin:",a:"Protamin",d:["Vitamin K","Naloxon","Flumazenil"],h:"Protamin neutralisiert Heparin.",f:"Antidot für Heparin: ___."},
+{s:"antiko",t:"Marcumar Wirkungseintritt",q:"Marcumar wirkt nach erster Tablette nach:",a:"3–5 Tagen (Heparin-Bridging nötig!)",d:["Sofort","1 Stunde","24 Stunden"],h:"Langsamer Wirkungseintritt! Heparin-Überbrückung bis INR im Ziel!"},
+{s:"antiko",t:"Marcumar Antidot",q:"Antidot für Marcumar:",a:"Vitamin K",d:["Protamin","Naloxon","PPSB allein"],h:"Vitamin-K-Antagonist → Antidot: Vitamin K. Notfall: PPSB.",f:"Antidot für Marcumar: Vitamin ___."},
+{s:"antiko",t:"Dabigatran Antidot",q:"Spezifisches Antidot für Dabigatran (Pradaxa):",a:"Idarucizumab (Praxbind)",d:["Vitamin K","Protamin","Andexanet alfa"],h:"Idarucizumab = spezifisch für Dabigatran."},
+{s:"antiko",t:"NMH Injektion",q:"NMH (Clexane) wird korrekt injiziert:",a:"S.c. in Bauchfalte, 90°, Hautfalte halten, NICHT nachreiben",d:["I.v. als Bolus","I.m. in Oberschenkel","Oral"],h:"Bauchfalte, 10 cm um Nabel, Hautfalte halten, 90°, langsam"},
+{s:"antiko",t:"Heparin Monitoring",q:"UFH wird überwacht mit:",a:"PTT (Partielle Thromboplastinzeit)",d:["INR","Anti-Xa","HbA1c"],h:"UFH → PTT (50–90s). NMH → meist kein Routine-Monitoring.",f:"Unfraktioniertes Heparin: Monitoring über ___."},
+{s:"antiko",t:"Vitamin K Kost",q:"Warum bei Marcumar auf Vitamin-K-reiche Kost achten?",a:"Vitamin K schwächt Marcumarwirkung ab → INR sinkt → Thromboserisiko",d:["Vitamin K erhöht Blutungszeit","Kombination ist toxisch","Kein Zusammenhang"],h:"Viel Spinat/Brokkoli → INR↓ → weniger Antikoagulation!"},
+
+// ── WHO-SCHMERZSCHEMA ────────────────────────────────────────────────────
+{s:"who",t:"Opioid Laxans",q:"Was MUSS bei ALLEN Opioid-Patienten verordnet werden?",a:"Laxans (Obstipation bei 100%!)",d:["Antiemetikum","PPI","Antihistaminikum"],h:"Obstipation = universelle Opioid-NW. IMMER Laxans!"},
+{s:"who",t:"Naloxon",q:"Antidot bei Opioid-Atemdepression:",a:"Naloxon",d:["Protamin","Vitamin K","Flumazenil"],h:"Naloxon i.v. titrieren = Opioid-Antagonist",f:"Opioid-Antidot: ___."},
+{s:"who",t:"Tramadol Stufe",q:"Tramadol steht auf WHO-Stufe:",a:"2 (schwaches Opioid)",d:["1","3","Koanalgetikum"],h:"Stufe 2: Tramadol, Tilidin/Naloxon, Codein"},
+{s:"who",t:"ASS Dosen",q:"ASS 100 mg/d vs. ASS 500 mg i.v.:",a:"100 mg = tägliche Prophylaxe. 500 mg i.v. = Herzinfarkt-Notfall",d:["Kein Unterschied","100 = Notfall","Beide nur Kopfschmerz"],h:"PRÜFUNGSFALLE! Dosen nicht verwechseln!"},
+{s:"who",t:"Paracetamol Max",q:"Max. Tagesdosis Paracetamol:",a:"4 g/Tag (Hepatotoxizität bei Überdosis!)",d:["2 g","6 g","10 g"],h:"Max. 4g. Bei Lebererkrankung: max. 2g!",f:"Paracetamol: max. ___ g pro Tag."},
+{s:"who",t:"NSAR Magen",q:"NSAR (Ibuprofen) können verursachen:",a:"Magenblutungen (Magenschutz/PPI empfohlen bei Langzeit!)",d:["Leberschäden","Nierensteine","Haarausfall"],h:"NSAR hemmen Prostaglandine → Magenschleimhautschaden!"},
+{s:"who",t:"Stufe 3 Opioide",q:"Beispiele für WHO-Stufe-3-Opioide:",a:"Morphin, Oxycodon, Fentanyl, Hydromorphon",d:["Tramadol, Tilidin","Ibuprofen, Paracetamol","Metamizol, Diclofenac"],h:"Stufe 3 = starke Opioide. Atemdepression überwachen!"},
+{s:"who",t:"Opioid AF",q:"Bei Opioiden muss ___ überwacht werden:",a:"Atemfrequenz (Atemdepression = gefährlichste NW!)",d:["Blutzucker","Hautfarbe","Körpertemperatur"],h:"AF + Bewusstsein + Sedierungsgrad regelmäßig kontrollieren!"},
+
+// ── PSYCHOPHARMAKA ────────────────────────────────────────────────────────
+{s:"psycho",t:"AD Wirkungseintritt",q:"Antidepressiva: Wirkungseintritt nach:",a:"2–4 Wochen",d:["Sofort","1–2 Tage","6–8 Wochen"],h:"Patienten informieren! Sonst Therapieabbruch!",f:"Antidepressiva wirken erst nach ___–4 Wochen."},
+{s:"psycho",t:"Benzos Sucht",q:"Benzodiazepine: maximale Einnahmedauer:",a:"4 Wochen (danach Abhängigkeitsrisiko!)",d:["2 Tage","6 Monate","Unbegrenzt"],h:"Benzo-Regel: max. 4 Wochen! Abhängigkeitspotenzial!",f:"Benzodiazepine: max. ___ Wochen."},
+{s:"psycho",t:"Insulin schwenken",q:"Mischinsulin vor Injektion:",a:"Schwenken (NICHT schütteln – zerstört Struktur!)",d:["Kräftig schütteln","Nicht bewegen","Erwärmen"],h:"Schwenken 20x sanft. Nie schütteln!"},
+{s:"psycho",t:"Antipsychotika NW",q:"Typische NW von typischen Antipsychotika (z.B. Haloperidol):",a:"Extrapyramidale Störungen (Steifheit, Tremor, Dyskinesien)",d:["Nur Müdigkeit","Nur Gewichtszunahme","Keine NW"],h:"Typische AP: starke EPS. Atypische AP: weniger EPS, mehr metabolisch."},
+
+// ── SEPSIS ───────────────────────────────────────────────────────────────
+{s:"sepsis",t:"Sepsis Definition",q:"Sepsis (Sepsis-3) ist:",a:"Lebensbedrohliche Organdysfunktion durch fehlregulierte Immunantwort auf Infektion",d:["Jede Infektion","Nur Blutvergiftung","Nur bei Bakterien"],h:"Sepsis-3 (2016): Organdysfunktion + Infektion!"},
+{s:"sepsis",t:"qSOFA Kriterien",q:"Die 3 qSOFA-Kriterien:",a:"RR systolisch ≤100, AF ≥22, GCS <15 (Bewusstseinsstörung)",d:["Puls, Temperatur, SpO2","RR, Puls, Urin","Temperatur, Leukozyten, CRP"],h:"qSOFA: ≥2 von 3 = Sepsis-Verdacht! Schnelles Bedside-Screening.",f:"qSOFA: RR ≤100, AF ≥___, GCS <15."},
+{s:"sepsis",t:"Sepsis Sofort",q:"Erste Maßnahme bei Sepsis-Verdacht:",a:"Sofort Arzt informieren + Blutkulturen VOR Antibiotika!",d:["Abwarten","Nur Fieber senken","Erst Angehörige informieren"],h:"Jede Stunde zählt! Arzt → Blutkulturen → dann sofort Antibiotika i.v."},
+{s:"sepsis",t:"Blutkulturen wann",q:"Blutkulturen bei Sepsis: WANN abnehmen?",a:"VOR der ersten Antibiotikagabe (aber Antibiotika nicht verzögern!)",d:["Nach Antibiotikagabe","Am nächsten Tag","Nur bei Fieber >40°C"],h:"BK VOR AB – aber AB nicht verzögern! Beides schnell!",f:"Blutkulturen werden ___ der Antibiotikagabe abgenommen."},
+{s:"sepsis",t:"Septischer Schock",q:"Septischer Schock ist:",a:"Sepsis + Vasopressorbedarf + Laktat >2 mmol/l trotz Volumen (Mortalität >40%!)",d:["Leichte Sepsis","Nur niedriger Blutdruck","SIRS ohne Infektion"],h:"Schwerste Form: Vasopressoren nötig + Laktat↑ = Gewebeminderperfusion"},
+{s:"sepsis",t:"Häufigster Sepsisfokus",q:"Häufigster Infektionsherd bei Sepsis:",a:"Lunge (Pneumonie)",d:["Harnwege","Haut","Darm"],h:"Pneumonie = häufigster Fokus. Dann Abdomen, Harnwege, Katheter."},
+{s:"sepsis",t:"SIRS vs Sepsis",q:"Unterschied SIRS vs. Sepsis:",a:"SIRS = systemische Entzündungsreaktion. Sepsis = Infektion + Organdysfunktion",d:["Kein Unterschied","SIRS ist schwerer","Sepsis hat kein Fieber"],h:"SIRS: Temp, HF, AF, Leukos. Sepsis-3: Infektion + Organdysfunktion!"},
+
+// ── MRSA ─────────────────────────────────────────────────────────────────
+{s:"mrsa",t:"MRSA Übertragung",q:"Hauptübertragungsweg von MRSA:",a:"Über die Hände des Personals (Kontaktübertragung!)",d:["Über die Luft","Über das Essen","Über Blut"],h:"Händehygiene = #1 Maßnahme gegen MRSA!",f:"MRSA wird hauptsächlich über die ___ des Personals übertragen."},
+{s:"mrsa",t:"MRSA Isolierung",q:"Hygienemaßnahmen bei MRSA:",a:"Einzelzimmer, Kittel, Handschuhe, MNS, eigene Utensilien",d:["Nur Händedesinfektion","Nur Kittel","Keine besonderen Maßnahmen"],h:"Kontaktisolierung: Einzelzimmer + Schutzausrüstung komplett!"},
+{s:"mrsa",t:"MRSA Sanierung",q:"MRSA-Sanierung dauert:",a:"5 Tage (antibakterielle Waschlotion, täglich Bettwäsche, Einmalzahnbürste)",d:["1 Tag","2 Wochen","1 Monat"],h:"5-Tage-Sanierung. Erst nach mehrfach negativen Abstrichen aufheben."},
+{s:"mrsa",t:"5 Momente",q:"Die 5 Momente der Händehygiene:",a:"Vor Pat.-Kontakt, vor aseptischer Tätigkeit, nach Kontamination, nach Pat.-Kontakt, nach Kontakt mit Umgebung",d:["Nur vor und nach Pat.-Kontakt","Nur vor aseptischer Tätigkeit","Nur bei sichtbarer Verschmutzung"],h:"WHO: 5 Momente! Händedesinfektion = WICHTIGSTE Einzelmaßnahme!"},
+{s:"mrsa",t:"MRSA Verlegung",q:"Bei Verlegung eines MRSA-Patienten:",a:"Aufnehmende Einrichtung MUSS über MRSA-Status informiert werden",d:["Keine Information nötig","Nur bei Symptomen","Nur wenn Arzt es anordnet"],h:"Informationspflicht! Sonst Infektionsgefahr in neuer Einrichtung!"},
+{s:"mrsa",t:"MRSA Therapie",q:"Antibiotikum der Wahl bei MRSA-Infektion:",a:"Vancomycin (oder Linezolid, Daptomycin)",d:["Penicillin","Amoxicillin","Ciprofloxacin"],h:"MRSA = resistent gegen Methicillin/Oxacillin. Vancomycin = Reserveantibiotikum."},
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOCK 4: TAG 39–51 (Neuro, Psych, Geriatrie, Recht, Prävention, Pädiatrie)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── SCHLAGANFALL ─────────────────────────────────────────────────────────
+{s:"apop",t:"FAST",q:"Wofür steht FAST beim Schlaganfall?",a:"Face, Arms, Speech, Time",d:["Fast, Action, Safety, Treatment","Feel, Assess, Stabilize, Transport","Focus, Alert, Scan, Treat"],h:"F=Mundwinkel, A=Arm absinken, S=Sprache, T=Time (sofort 112!)",f:"FAST: Face, Arms, Speech, ___."},
+{s:"apop",t:"Thrombolyse",q:"Thrombolyse-Zeitfenster:",a:"<4,5 Stunden nach Symptombeginn",d:["<1 Stunde","<12 Stunden","<24 Stunden"],h:"Time is Brain! rtPA nur bei ischämisch, <4,5h, nach CT!",f:"Thrombolyse-Zeitfenster: <___ Stunden."},
+{s:"apop",t:"Bobath Nachttisch",q:"Bobath: Wohin kommt der Nachttisch?",a:"Zur betroffenen Seite (Wahrnehmung fördern!)",d:["Zur gesunden Seite","Mittig","Egal"],h:"24h-Konzept: ALLES zur betroffenen Seite!"},
+{s:"apop",t:"Hämorrhagisch Lyse",q:"Bei hämorrhagischem Schlaganfall: Thrombolyse?",a:"NEIN! Würde Blutung verstärken!",d:["Ja, immer","Ja, aber nur i.v.","Nur bei starken Symptomen"],h:"Hämorrhagisch = Blutung! CT ZUERST, NIE Thrombolyse!"},
+{s:"apop",t:"Neglect",q:"Was ist Neglect?",a:"Patient ignoriert die betroffene Seite (Wahrnehmungsstörung)",d:["Sprachstörung","Lähmung","Schluckstörung"],h:"Neglect: betroffene Körper-/Raumhälfte wird nicht wahrgenommen"},
+{s:"apop",t:"Dysphagie Schlaganfall",q:"Dysphagie nach Schlaganfall: erste Maßnahme?",a:"Schlucktest VOR erstem Trinken/Essen! Logopädie einschalten!",d:["Sofort Essen anbieten","Abwarten","Nur PEG anlegen"],h:"40–70% haben Dysphagie! Aspirationsgefahr! Erst Schlucktest!"},
+{s:"apop",t:"Ischämisch vs Häm",q:"80% aller Schlaganfälle sind:",a:"Ischämisch (Gefäßverschluss durch Thrombus/Embolus)",d:["Hämorrhagisch","Beides gleich häufig","Weder noch"],h:"80% ischämisch, 20% hämorrhagisch. CT unterscheidet!"},
+
+// ── PARKINSON & MS ───────────────────────────────────────────────────────
+{s:"park",t:"TRAP",q:"TRAP bei Parkinson steht für:",a:"Tremor, Rigor, Akinese, Posturale Instabilität",d:["Tachykardie, Rigor, Apnoe, Paralyse","Tremor, Reflex, Ataxie, Parese","Transfer, Reha, Aktivierung, Prophylaxe"],h:"4 Kardinalsymptome des Parkinson",f:"TRAP: Tremor, Rigor, Akinese, Posturale ___."},
+{s:"park",t:"Zahnrad",q:"Zahnradphänomen bei Parkinson:",a:"Ruckartige Widerstände bei passiver Bewegung (Rigor!)",d:["Zähneknirschen","Tremor","Gangstörung"],h:"Typisches Rigor-Zeichen bei passiver Gelenkbewegung"},
+{s:"park",t:"Medikamente pünktlich",q:"Parkinson-Medikamente müssen ___ gegeben werden:",a:"Pünktlich zur exakt gleichen Zeit",d:["Nach dem Essen","Nur bei Beschwerden","Nur morgens"],h:"Verspätung → On-Off-Phänomen! Pünktlichkeit ist kritisch!"},
+{s:"park",t:"L-Dopa Essen",q:"L-Dopa wird am besten eingenommen:",a:"30 Minuten VOR dem Essen (Eiweiß hemmt Aufnahme!)",d:["Nach dem Essen","Mit Milch","Egal"],h:"Eiweiß konkurriert mit L-Dopa um Transport. 30 Min. vor Mahlzeit!",f:"L-Dopa: ___ Minuten VOR dem Essen."},
+{s:"park",t:"Uthoff",q:"Uthoff-Phänomen bei MS:",a:"Wärme verschlechtert ALLE MS-Symptome",d:["Kälte verbessert MS","Licht löst Symptome aus","Stress heilt MS"],h:"Wärme (Bad, Fieber, Sonne) → alle Symptome schlimmer!"},
+{s:"park",t:"MS Fatigue",q:"MS-Fatigue wird am besten behandelt mit:",a:"Pacing (Energiemanagement: Aktivitäten und Pausen abwechseln)",d:["Mehr Schlaf","Maximale Belastung","Bettruhe"],h:"Fatigue = neurologisch, nicht durch Schlaf behebbar!"},
+{s:"park",t:"Mikrographie",q:"Mikrographie bei Parkinson ist:",a:"Immer kleiner werdende Handschrift (Teil der Akinese/Bradykinese)",d:["Große Handschrift","Unleserliche Handschrift","Schreibunfähigkeit"],h:"Handschrift wird kleiner + unleserlicher"},
+{s:"park",t:"MS Definition",q:"Multiple Sklerose ist:",a:"Autoimmunerkrankung mit Demyelinisierung im ZNS",d:["Bakterielle Infektion","Genetische Erkrankung","Vitaminmangel"],h:"Immunsystem greift Myelinscheiden an → vielgestaltige Symptome"},
+
+// ── EPILEPSIE ────────────────────────────────────────────────────────────
+{s:"epi",t:"Mund verboten",q:"Bei Epilepsie-Anfall VERBOTEN:",a:"Etwas in den Mund stecken (Beißkeil, Finger, Löffel)",d:["Uhrzeit notieren","Umgebung sichern","Stabile Seitenlage danach"],h:"NIEMALS etwas in den Mund! Verletzungs- + Aspirationsgefahr!"},
+{s:"epi",t:"Status epilepticus",q:"Status epilepticus ab:",a:">5 Minuten oder 2 Anfälle ohne Erholung",d:[">2 Minuten",">10 Minuten",">30 Minuten"],h:"Status epilepticus = NOTFALL! Sofort Arzt/Notruf!",f:"Status epilepticus: Anfallsdauer >___ Minuten."},
+{s:"epi",t:"Nach Anfall",q:"Nach dem Anfall: Patient in ___ legen:",a:"Stabile Seitenlage (Aspirationsschutz!)",d:["Rückenlage","Bauchlage","Schocklage"],h:"Stabile Seitenlage bis Patient bei Bewusstsein"},
+{s:"epi",t:"Nicht festhalten",q:"Extremitäten bei Anfall:",a:"NICHT festhalten (Verletzungsgefahr!)",d:["Festhalten","Hochlagern","Massieren"],h:"Nur Umgebung sichern, Kopf schützen, Zeit stoppen!"},
+{s:"epi",t:"GCS",q:"GCS steht für:",a:"Glasgow Coma Scale (Bewusstseinsbeurteilung: 3–15 Punkte)",d:["German Care System","General Clinical Score","Global Consciousness Scale"],h:"GCS: Augen (1-4) + Sprache (1-5) + Motorik (1-6) = 3-15",f:"GCS: ___ Coma Scale (3–15 Punkte)."},
+
+// ── DEMENZ ───────────────────────────────────────────────────────────────
+{s:"dem",t:"Alzheimer vs Vaskulär",q:"Alzheimer vs. vaskuläre Demenz im Verlauf:",a:"Alzheimer: stetig-progredient. Vaskuläre: stufenweise (nach Infarkten)",d:["Kein Unterschied","Alzheimer: stufenweise","Vaskuläre: stetig"],h:"Alzheimer = stetig, langsam. Vaskuläre = stufenweise."},
+{s:"dem",t:"Milieutherapie",q:"Milieutherapie bei Demenz:",a:"Vertraute, sichere Umgebung mit Orientierungshilfen (Uhr, Kalender, Fotos)",d:["Medikamentöse Therapie","Isolierung","Fixierung"],h:"Bekannte Gegenstände, stabile Routinen, Orientierungshilfen"},
+{s:"dem",t:"Leichte Demenz EWF",q:"Leichte Demenz = einwilligungsunfähig?",a:"NEIN – immer individuell prüfen!",d:["Ja, immer","Ja, ab Diagnose","Ja, wenn Familie es sagt"],h:"Leichte Demenz ≠ EWU! PRÜFUNGSFALLE!"},
+{s:"dem",t:"Fixierung",q:"Fixierung bei Demenz ist erlaubt:",a:"Nur mit richterlichem Beschluss (BtG!) oder akuter Selbst-/Fremdgefährdung",d:["Immer wenn Patient verwirrt ist","Auf Anordnung der PFK","Wenn Angehörige es wünschen"],h:"Fixierung = freiheitsentziehende Maßnahme → richterliche Genehmigung!"},
+{s:"dem",t:"Biographiearbeit",q:"Biographiearbeit bei Demenz nutzt:",a:"Die Lebensgeschichte des Patienten als Ressource",d:["Nur medizinische Daten","Nur die aktuelle Situation","Nur die Diagnose"],h:"Persönliche Erinnerungen, Gewohnheiten, Biographie = Würde + Identität"},
+{s:"dem",t:"Validation nicht",q:"Bei Validation darf man NICHT:",a:"Die Wahrnehmung des Patienten korrigieren oder Real. orientieren (im fortg. Stadium)",d:["Gefühle spiegeln","Berühren","Zuhören"],h:"NICHT korrigieren! Gefühle anerkennen, spiegeln, in Welt eingehen."},
+
+// ── DEPRESSION & SUIZID ──────────────────────────────────────────────────
+{s:"depr",t:"3 Hauptsymptome",q:"3 Hauptsymptome der Depression:",a:"Gedrückte Stimmung, Interessenverlust (Anhedonie), Antriebsminderung",d:["Angst, Panik, Tachykardie","Schlafstörung, Appetitlosigkeit, Rückzug","Wahnideen, Halluzinationen"],h:"Mind. 2 davon täglich ≥2 Wochen = depressive Episode",f:"3 Hauptsymptome: gedrückte Stimmung, Anhedonie, ___."},
+{s:"depr",t:"Suizid ansprechen",q:"Patient deutet Suizidgedanken an. Was tun?",a:"DIREKT ansprechen: 'Haben Sie Gedanken, sich das Leben zu nehmen?'",d:["Ignorieren","Beruhigen: 'Das geht vorbei'","Thema wechseln"],h:"Direktes Ansprechen verstärkt Gedanken NICHT! Bei ihm bleiben!"},
+{s:"depr",t:"Suizid verstärken",q:"Suizidgedanken direkt ansprechen verstärkt diese:",a:"FALSCH – es zeigt Interesse und kann Leben retten!",d:["Richtig","Manchmal","Nur bei Kindern"],h:"Mythos! Direktes Ansprechen = lebensrettend!"},
+{s:"depr",t:"Anhedonie",q:"Anhedonie bedeutet:",a:"Unfähigkeit, Freude zu empfinden (Interessenverlust)",d:["Übermäßige Freude","Antriebssteigerung","Schlafstörung"],h:"Eines der 3 Hauptsymptome der Depression"},
+{s:"depr",t:"AD Wirklatenz",q:"Antidepressiva wirken erst nach:",a:"2–4 Wochen",d:["Sofort","1–2 Tagen","8–12 Wochen"],h:"Patienten INFORMIEREN → sonst Therapieabbruch!"},
+
+// ── SUCHT & ESSSTÖRUNGEN ─────────────────────────────────────────────────
+{s:"sucht",t:"CAGE",q:"CAGE: Wofür steht das C?",a:"Cut (Wunsch, weniger zu trinken)",d:["Craving","Careless","Continuous"],h:"C=Cut, A=Annoyed, G=Guilty, E=Eye-opener. ≥2 = Verdacht!",f:"CAGE: C = ___ (Wunsch weniger zu trinken)."},
+{s:"sucht",t:"Delirium tremens",q:"Delirium tremens ist eine Komplikation des:",a:"Schweren Alkoholentzugs (lebensbedrohlich!)",d:["Leichten Rausches","Medikamentenwechsels","Schlafentzugs"],h:"Halluzinationen, Krampfanfälle, Tachykardie → NOTFALL!"},
+{s:"sucht",t:"Eye-opener",q:"Eye-opener (E in CAGE):",a:"Morgens Alkohol trinken um in Gang zu kommen",d:["Augen öffnen können","Frühstück mit Saft","Morgenspaziergang"],h:"Starkes Zeichen für Abhängigkeit!"},
+{s:"sucht",t:"Anorexie BMI",q:"BMI bei Anorexia nervosa:",a:"<17,5 kg/m²",d:["<20","<25","<15"],h:"Anorexie: BMI <17,5 + Gewichtsphobie + gestörtes Körperbild",f:"Anorexia nervosa: BMI <___."},
+{s:"sucht",t:"Bulimie Kennzeichen",q:"Typisches Kennzeichen der Bulimia nervosa:",a:"Essanfälle mit anschließendem Erbrechen (Binge-Purge-Zyklus)",d:["Nur Hungern","Nur Übergewicht","Nur Alkoholkonsum"],h:"Bulimie: Essanfall → Erbrechen/Abführmittel. Oft Normalgewicht!"},
+
+// ── GERIATRIE & PALLIATIV ────────────────────────────────────────────────
+{s:"geri",t:"Palliativ Ziel",q:"Palliative Pflege hat zum Ziel:",a:"Symptomkontrolle und Lebensqualität (NICHT Lebensverlängerung!)",d:["Heilung","Lebensverlängerung um jeden Preis","Nur Schmerzlinderung"],h:"Palliativ = Symptomkontrolle, Würde, Lebensqualität"},
+{s:"geri",t:"SAPV",q:"SAPV steht für:",a:"Spezialisierte Ambulante Palliativversorgung",d:["Standardisierte Allgemeine Patientenversorgung","Stationäre Akute Palliativversorgung","Systematische Ambulante Pflegeversorgung"],h:"SAPV: multiprofessionelles Team, 24h-Erreichbarkeit, zu Hause sterben können"},
+{s:"geri",t:"Multimorbidität",q:"Multimorbidität bedeutet:",a:"Gleichzeitiges Vorhandensein mehrerer chronischer Erkrankungen",d:["Nur eine schwere Krankheit","Nur akute Erkrankungen","Nur psychische Erkrankungen"],h:"Typisch geriatrisch: 3+ Erkrankungen gleichzeitig → Polypharmazie-Risiko!"},
+{s:"geri",t:"Delir Notfall",q:"Akutes Delir ist:",a:"Ein Notfall! Plötzliche Verwirrtheit, Unruhe, Halluzinationen",d:["Chronische Demenz","Normales Altern","Nur Müdigkeit"],h:"Delir ≠ Demenz! Delir = akut + reversibel. Demenz = chronisch."},
+{s:"geri",t:"Dysphagie Gefahr",q:"Hauptgefahr bei Dysphagie:",a:"Aspiration (Nahrung/Flüssigkeit in die Lunge → Pneumonie!)",d:["Nur Gewichtsverlust","Nur Dehydration","Nur Schmerzen"],h:"Aspiration → Aspirationspneumonie! Logopädie + Kostanpassung!"},
+
+// ── RECHT ────────────────────────────────────────────────────────────────
+{s:"recht",t:"§4 PflBG",q:"§4 PflBG definiert ___ vorbehaltene Tätigkeiten:",a:"5",d:["3","4","7"],h:"5 VT: nur Pflegefachkräfte, NICHT delegierbar!",f:"§4 PflBG: ___ vorbehaltene Tätigkeiten."},
+{s:"recht",t:"Schweigepflicht Angehörige",q:"Tochter fragt nach Diagnose des Vaters:",a:"Keine Auskunft – §203 StGB gilt auch gegenüber Angehörigen!",d:["Alle Diagnosen nennen","Allgemeine Infos geben","Zur Stationsleitung verbinden"],h:"§203: Schweigepflicht gilt AUCH gegenüber Angehörigen!"},
+{s:"recht",t:"Fehlerkorrektur Doku",q:"Fehlerkorrektur in der Dokumentation:",a:"Einmal durchstreichen + Kürzel + Datum",d:["Tipp-Ex","Neues Blatt","Unleserlich übermalen"],h:"Leserlich durchstreichen + Handzeichen + Datum. KEIN Tipp-Ex!",f:"Fehlerkorrektur: durchstreichen + ___ + Datum."},
+{s:"recht",t:"§823 BGB",q:"Patient stürzt wegen fehlender Prophylaxe. Haftung:",a:"§823 BGB – zivilrechtliche Haftung (Schadensersatz)",d:["Keine Haftung","Nur moralisch","Nur berufsrechtlich"],h:"§823 BGB: zivilrechtlich. §229 StGB: strafrechtlich möglich."},
+{s:"recht",t:"VT nicht delegierbar",q:"Vorbehaltene Tätigkeiten sind:",a:"NICHT an Pflegehilfskräfte delegierbar",d:["An jeden delegierbar","An Auszubildende delegierbar","An Angehörige delegierbar"],h:"§4 PflBG: exklusiv Pflegefachkräfte!"},
+
+// ── OTTAWA & SALUTOGENESE ────────────────────────────────────────────────
+{s:"praev",t:"SOC",q:"SOC (Kohärenzgefühl) besteht aus:",a:"Verstehbarkeit, Handhabbarkeit, Sinnhaftigkeit",d:["Gesundheit, Wohlbefinden, Qualität","Primär, Sekundär, Tertiär","Prävention, Behandlung, Reha"],h:"Antonovsky: Was hält Menschen GESUND?"},
+{s:"praev",t:"Ottawa Jahr",q:"Ottawa-Charta: Jahreszahl?",a:"1986",d:["1978","1992","2001"],h:"Ottawa-Charta 1986 der WHO",f:"Ottawa-Charta: ___."},
+{s:"praev",t:"Sekundäre Prävention",q:"Mammographie-Screening ist:",a:"Sekundäre Prävention (Früherkennung)",d:["Primär","Tertiär","Quartär"],h:"Sekundär = Früherkennung asymptomatischer Krankheit"},
+{s:"praev",t:"Primäre Prävention",q:"Impfung ist welche Prävention?",a:"Primär (VOR Entstehung der Krankheit)",d:["Sekundär","Tertiär","Quartär"],h:"Primär = verhindern VOR Auftreten"},
+{s:"praev",t:"Tertiäre Prävention",q:"Reha nach Herzinfarkt ist:",a:"Tertiäre Prävention (Rückfallverhütung)",d:["Primär","Sekundär","Quartär"],h:"Tertiär = nach Erkrankung: Rückfall verhindern, Rehabilitation"},
+{s:"praev",t:"EbN",q:"EbN kombiniert 3 Quellen:",a:"Externe Evidenz (Studien) + klinische Expertise + Patientenpräferenzen",d:["Nur Studien","Nur Erfahrung","Nur Patientenwunsch"],h:"Evidence-based Nursing: alle 3 Quellen gleichwertig!"},
+
+// ── SBAR & DELEGATION ────────────────────────────────────────────────────
+{s:"sbar",t:"Assessment SBAR",q:"Welches SBAR-Element enthält Ihre Einschätzung?",a:"A – Assessment (eigene pflegefachliche Beurteilung)",d:["S – Situation","B – Background","R – Recommendation"],h:"'Ich schätze ein, dass...'"},
+{s:"sbar",t:"Logopäde Dysphagie",q:"Bei Dysphagie einbeziehen:",a:"Logopäde (Schlucktherapie!)",d:["Physiotherapeut","Ergotherapeut","Sozialarbeiter"],h:"Logopäde = Schluck- und Sprachtherapie"},
+{s:"sbar",t:"Delegation Verantwortung",q:"Wer delegiert, bleibt:",a:"Mitverantwortlich (Organisations- und Aufsichtspflicht!)",d:["Nicht mehr verantwortlich","Nur moralisch","Nur dokumentationspflichtig"],h:"Delegation ≠ Verantwortungsübertragung!"},
+{s:"sbar",t:"Ergotherapeut",q:"Aufgabe des Ergotherapeuten:",a:"ADL-Training und Hilfsmittelanpassung",d:["Schlucktherapie","Atemtherapie","Soziale Beratung"],h:"Ergotherapeut: Aktivitäten des täglichen Lebens + Hilfsmittel"},
+{s:"sbar",t:"Entlassungsmanagement",q:"Entlassungsmanagement soll beginnen:",a:"Frühzeitig – bereits bei Aufnahme!",d:["Am Entlassungstag","1 Tag vorher","Erst nach OP"],h:"FRÜHZEITIG planen! Nicht erst am letzten Tag!"},
+
+// ── PÄDIATRIE ────────────────────────────────────────────────────────────
+{s:"paed",t:"Mukoviszidose Vererbung",q:"Mukoviszidose wird ___ vererbt:",a:"Autosomal-rezessiv",d:["Autosomal-dominant","X-chromosomal","Nicht erblich"],h:"Beide Eltern müssen Träger sein"},
+{s:"paed",t:"Fieber Kind",q:"Fieber beim Kind liegt vor ab:",a:"38,5°C rektal",d:["37,0°C","37,5°C","39,0°C"],h:"≥38,5°C rektal = Fieber. 37,5–38,4°C = subfebril.",f:"Fieber beim Kind: ab ___°C rektal."},
+{s:"paed",t:"Familienorientierte Pflege",q:"Familienorientierte Pflege bedeutet:",a:"Familie als Einheit einbeziehen (nicht nur das Kind!)",d:["Nur Eltern pflegen","Familie informieren","Eltern ausschließen"],h:"Rooming-in, Anleitung, Miteinbeziehung der Eltern"},
+{s:"paed",t:"Mukoviszidose Organe",q:"Mukoviszidose betrifft vor allem:",a:"Lunge und Pankreas (zäher Schleim verstopft Ausführungsgänge)",d:["Nur die Nieren","Nur das Herz","Nur die Haut"],h:"CF: zäher Schleim → Lunge (Infekte) + Pankreas (Maldigestion)"},
+{s:"paed",t:"ADHS",q:"ADHS Kernsymptome:",a:"Aufmerksamkeitsdefizit, Hyperaktivität, Impulsivität",d:["Nur Hyperaktivität","Nur Müdigkeit","Nur Aggression"],h:"Aufmerksamkeitsdefizit-Hyperaktivitätsstörung: 3 Kernsymptome"},
+
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENGINE: Generate questions from concepts
+// Each concept can appear as MC, TF, FILL, or MATCH
+// ═══════════════════════════════════════════════════════════════════════════
+function genMC(c){
+  const opts=shuffle([c.a,...c.d]);
+  return{type:'MC',q:c.q,opts,correct:opts.indexOf(c.a),hint:c.h,concept:c.t};
+}
+function genTF(c){
+  // 50% true, 50% false
+  if(Math.random()>0.5){
+    return{type:'TF',q:c.q+' → '+c.a,correct:true,hint:c.h,concept:c.t};
+  }else{
+    const wrong=c.d[Math.floor(Math.random()*c.d.length)];
+    return{type:'TF',q:c.q+' → '+wrong,correct:false,hint:'Richtig wäre: '+c.a+'. '+c.h,concept:c.t};
+  }
+}
+function genFILL(c){
+  if(!c.f)return null;
+  return{type:'FILL',q:c.f,answer:c.a,hint:c.h,concept:c.t};
+}
+function genLesson(skillId,crown){
+  const pool=C.filter(x=>x.s===skillId);
+  if(!pool.length)return[];
+  // Crown system: each level uses DIFFERENT subset + harder question types
+  // Crown 0: first 60% of pool as MC (introduction)
+  // Crown 1: last 60% of pool as MC+TF (new questions + review)
+  // Crown 2: full pool shuffled, MC+TF+FILL (all content, mixed)
+  // Crown 3: full pool, more FILL, fewer MC (harder)
+  // Crown 4+: full pool, mostly FILL+TF (mastery)
+  let qs=[];
+  const half=Math.ceil(pool.length*0.6);
+  let picked;
+  if(crown===0) picked=shuffle(pool.slice(0,half)).slice(0,10);
+  else if(crown===1) picked=shuffle(pool.slice(Math.max(0,pool.length-half))).slice(0,10);
+  else picked=shuffle(pool).slice(0,12);
+
+  picked.forEach((c,i)=>{
+    if(crown===0){
+      qs.push(genMC(c));
+    }else if(crown===1){
+      qs.push(i%2===0?genMC(c):genTF(c));
+    }else if(crown===2){
+      const fill=genFILL(c);
+      if(i%3===0&&fill)qs.push(fill);
+      else if(i%3===1)qs.push(genTF(c));
+      else qs.push(genMC(c));
+    }else if(crown===3){
+      const fill=genFILL(c);
+      const r=Math.random();
+      if(r<0.4&&fill)qs.push(fill);
+      else if(r<0.7)qs.push(genTF(c));
+      else qs.push(genMC(c));
+    }else{
+      const fill=genFILL(c);
+      if(fill&&Math.random()<0.5)qs.push(fill);
+      else qs.push(genTF(c));
+    }
+  });
+  return shuffle(qs).slice(0,10);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════════════════════
+let view='home';// home, lesson, result, profile
+let curSkill=null;
+let questions=[];
+let qi=0;
+let lives=5;
+let score=0;
+let ans=null;
+let feedback=false;
+let fillVal='';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════════════
+function render(){
+  const app=$('#app');
+  app.innerHTML='';
+  refillHearts();
+  if(view==='home')renderHome(app);
+  else if(view==='lesson')renderLesson(app);
+  else if(view==='result')renderResult(app);
+  else if(view==='profile')renderProfile(app);
+}
+
+function renderNav(app){
+  const nav=el('div',{class:'nav'});
+  [{v:'home',i:'🏠',l:'Lernen'},{v:'profile',i:'👤',l:'Profil'}].forEach(n=>{
+    nav.appendChild(el('button',{class:view===n.v?'act':'',onclick:()=>{view=n.v;render();}},`<i>${n.i}</i>${n.l}`));
+  });
+  app.appendChild(nav);
+}
+
+function isUnlocked(sk){
+  if(!sk.pre)return true;
+  return getCrowns(sk.pre)>=1;
+}
+
+function renderHome(app){
+  // Header
+  const hdr=el('div',{class:'hdr'});
+  const hr=el('div',{class:'hdr-r'});
+  hr.appendChild(el('h1',{},'🏥 PflegeTrainer'));
+  const badges=el('div',{class:'hdr-badges'});
+  badges.appendChild(el('div',{class:'badge'},`<i>🔥</i>${ST.streak}`));
+  badges.appendChild(el('div',{class:'badge'},`<i>⭐</i>${ST.xp}`));
+  hr.appendChild(badges);
+  hdr.appendChild(hr);
+  app.appendChild(hdr);
+
+  const scr=el('div',{class:'scr'});
+
+  // Daily goal
+  const pct=Math.min(100,Math.round((ST.dailyXP/ST.dailyGoal)*100));
+  const dg=el('div',{class:'dg'});
+  dg.innerHTML=`<div class="dg-t">📅 Tagesziel: ${ST.dailyXP}/${ST.dailyGoal} XP</div><div class="dg-b"><div style="width:${pct}%;background:${pct>=100?'#f59e0b':'#10b981'}"></div></div><div class="dg-l"><span>${pct>=100?'✅ Geschafft!':'Weiter üben!'}</span><span>${Math.max(0,ST.dailyGoal-ST.dailyXP)} XP übrig</span></div>`;
+  scr.appendChild(dg);
+
+  // Practice banner (if any skills done)
+  const doneSkills=SKILLS.filter(s=>getCrowns(s.id)>=1);
+  if(doneSkills.length>0){
+    const pb=el('button',{class:'pban',onclick:()=>{
+      const rs=doneSkills[Math.floor(Math.random()*doneSkills.length)];
+      startLesson(rs.id);
+    }});
+    pb.innerHTML=`<i>🔄</i><div><div class="pban-t">Übungsstunde</div><div class="pban-s">${doneSkills.length} Themen zum Wiederholen</div></div>`;
+    scr.appendChild(pb);
+  }
+
+  // Units
+  UNITS.forEach(u=>{
+    const skills=SKILLS.filter(s=>s.u===u.id);
+    const doneCnt=skills.filter(s=>getCrowns(s.id)>=1).length;
+    const unit=el('div',{class:'unit'});
+
+    const uh=el('div',{class:'unit-h',style:{background:u.c+'15',border:`1.5px solid ${u.c}30`}});
+    uh.innerHTML=`<span style="font-size:22px">${u.e}</span><h2 style="color:${u.c}">${u.t}</h2><span class="ct" style="color:${u.c}">${doneCnt}/${skills.length}</span>`;
+    unit.appendChild(uh);
+
+    const up=el('div',{class:'unit-p'});
+    up.innerHTML=`<div style="width:${skills.length?((doneCnt/skills.length)*100):0}%;background:${u.c}"></div>`;
+    unit.appendChild(up);
+
+    skills.forEach(sk=>{
+      const cr=getCrowns(sk.id);
+      const unlocked=isUnlocked(sk);
+      const cls=cr>=5?'sk gold':cr>=1?'sk done':unlocked?'sk':'sk locked';
+      const btn=el('button',{class:cls,onclick:()=>unlocked&&startLesson(sk.id)});
+      const ic=el('div',{class:'sk-ic',style:{background:cr>=1?u.c+'20':'#334155'}});
+      ic.textContent=cr>=5?'👑':sk.i;
+      btn.appendChild(ic);
+      const info=el('div',{class:'sk-info'});
+      info.innerHTML=`<div class="sk-t">${sk.t}</div>`;
+      const sub=cr>=5?'Gemeistert! Weiter üben →':cr>=1?`Crown ${cr}/5 · Tippen für nächstes Level`:(unlocked?'Tippen zum Starten →':'🔒 Vorheriges Thema abschließen');
+      info.innerHTML+=`<div class="sk-s">${sub}</div>`;
+      if(cr>0){
+        const crowns=el('div',{class:'crowns'});
+        for(let i=0;i<5;i++)crowns.appendChild(el('i',{},i<cr?'👑':'⚪'));
+        info.appendChild(crowns);
+      }
+      btn.appendChild(info);
+      unit.appendChild(btn);
+    });
+    scr.appendChild(unit);
+  });
+
+  // Block info
+  scr.appendChild(el('div',{style:{textAlign:'center',padding:'16px 0',borderTop:'1px solid #334155',marginTop:'16px',color:'#64748b',fontSize:'11px'}},'Komplett: Tag 1–51 · Pflegeprozess · ABEDL · Assessment · Prophylaxen · Kommunikation · Ethik'));
+
+  app.appendChild(scr);
+  renderNav(app);
+}
+
+function startLesson(sid){
+  curSkill=SKILLS.find(s=>s.id===sid);
+  const cr=getCrowns(sid);
+  questions=genLesson(sid,cr);
+  if(!questions.length)return;
+  qi=0;lives=5;score=0;ans=null;feedback=false;fillVal='';
+  view='lesson';
+  render();
+}
+
+function renderLesson(app){
+  if(!questions.length||qi>=questions.length)return;
+  const q=questions[qi];
+
+  // Bar
+  const bar=el('div',{class:'lb'});
+  bar.appendChild(el('button',{class:'x',onclick:()=>{view='home';render();}},'\u00d7'));
+  const prog=el('div',{class:'lb-p'});
+  prog.innerHTML=`<div style="width:${(qi/questions.length)*100}%"></div>`;
+  bar.appendChild(prog);
+  const hearts=el('div',{class:'lb-h'});
+  for(let i=0;i<5;i++)hearts.appendChild(el('i',{},i<lives?'❤️':'🖤'));
+  bar.appendChild(hearts);
+  app.appendChild(bar);
+
+  app.appendChild(el('div',{style:{padding:'2px 16px 4px',color:'#64748b',fontSize:'11px'}},`${qi+1}/${questions.length} · ${curSkill.t}`));
+
+  const qw=el('div',{class:'qw'});
+
+  if(q.type==='MC')renderMC(qw,q);
+  else if(q.type==='TF')renderTF(qw,q);
+  else if(q.type==='FILL')renderFill(qw,q);
+
+  app.appendChild(qw);
+
+  if(feedback)renderFeedback(app,q);
+}
+
+function doAnswer(correct,q){
+  if(feedback)return;
+  feedback=true;
+  if(correct)score++;
+  else lives--;
+  render();
+}
+
+function nextQ(){
+  qi++;ans=null;feedback=false;fillVal='';
+  if(qi>=questions.length||lives<=0){
+    const earned=score*20;
+    addXP(earned);
+    if(score>=Math.ceil(questions.length*0.6))addCrown(curSkill.id);
+    view='result';
+  }
+  render();
+}
+
+function renderMC(parent,q){
+  parent.appendChild(el('div',{class:'qt'},'🎯 Multiple Choice'));
+  parent.appendChild(el('div',{class:'qq'},q.q));
+  const labels=['A','B','C','D'];
+  q.opts.forEach((opt,i)=>{
+    let cls='opt';
+    if(feedback){
+      if(i===q.correct)cls='opt ok';
+      else if(ans===i)cls='opt no';
+      else cls='opt dim';
+    }
+    const btn=el('button',{class:cls,onclick:()=>{if(!feedback){ans=i;doAnswer(i===q.correct,q);}}});
+    btn.innerHTML=`<span class="l">${labels[i]}</span><span>${opt}</span>`;
+    parent.appendChild(btn);
+  });
+}
+
+function renderTF(parent,q){
+  parent.appendChild(el('div',{class:'qt'},'✓✗ Richtig oder Falsch?'));
+  parent.appendChild(el('div',{class:'qq'},q.q));
+  const row=el('div',{class:'tfr'});
+  [true,false].forEach(val=>{
+    let cls='tfb';
+    if(feedback){
+      if(val===q.correct)cls='tfb ok';
+      else if(ans===val)cls='tfb no';
+    }
+    row.appendChild(el('button',{class:cls,onclick:()=>{if(!feedback){ans=val;doAnswer(val===q.correct,q);}}},val?'✅ Richtig':'❌ Falsch'));
+  });
+  parent.appendChild(row);
+}
+
+function renderFill(parent,q){
+  parent.appendChild(el('div',{class:'qt'},'✏️ Lückentext'));
+  const parts=q.q.split('___');
+  const qDiv=el('div',{class:'qq'});
+  qDiv.innerHTML=parts.map((p,i)=>p+(i<parts.length-1?`<span style="display:inline-block;min-width:80px;border-bottom:2px solid ${feedback?(ans==='ok'?'#10b981':'#ef4444'):'#475569'};padding:0 6px;margin:0 4px;color:${feedback?(ans==='ok'?'#10b981':'#ef4444'):'#94a3b8'};font-weight:${feedback?700:400}">${feedback?fillVal:'\u3000\u3000'}</span>`:'')).join('');
+  parent.appendChild(qDiv);
+
+  if(!feedback){
+    const row=el('div',{class:'flr'});
+    const inp=el('input',{class:'fli',placeholder:'Antwort eingeben...',value:fillVal,oninput:(e)=>{fillVal=e.target.value;},onkeydown:(e)=>{if(e.key==='Enter')checkFill(q);}});
+    row.appendChild(inp);
+    row.appendChild(el('button',{class:'flg',onclick:()=>checkFill(q)},'→'));
+    parent.appendChild(row);
+    setTimeout(()=>inp.focus(),100);
+  }else{
+    parent.appendChild(el('div',{class:ans==='ok'?'flx ok':'flx no'},ans==='ok'?'✓ Richtig!':`✗ Richtige Antwort: "${q.answer}"`));
+  }
+}
+
+function checkFill(q){
+  if(!fillVal.trim())return;
+  const ok=fuzzy(fillVal,q.answer);
+  ans=ok?'ok':'no';
+  doAnswer(ok,q);
+}
+
+function renderFeedback(app,q){
+  const correct=q.type==='FILL'?ans==='ok':q.type==='TF'?ans===q.correct:ans===q.correct;
+  const fb=el('div',{class:'fb '+(correct?'ok':'no')});
+  fb.innerHTML=`<div class="fb-i"><div class="fb-r"><span class="fb-e">${correct?'🎉':'💡'}</span><div><div class="fb-t" style="color:${correct?'#10b981':'#ef4444'}">${correct?'Richtig!':'Nicht ganz...'}</div><div class="fb-w">${q.hint||''}</div></div></div><button class="fb-b ${correct?'ok':'no'}" onclick="nextQ()">Weiter →</button></div>`;
+  app.appendChild(fb);
+}
+
+function renderResult(app){
+  const pct=Math.round((score/questions.length)*100);
+  const passed=score>=Math.ceil(questions.length*0.6);
+  const earned=score*20;
+  const cr=getCrowns(curSkill.id);
+  app.innerHTML=`<div class="res"><div class="res-i">
+    <div class="res-e">${passed?(cr>=5?'🏆':'🎉'):'💪'}</div>
+    <div class="res-t">${passed?(cr>=5?'Gemeistert!':'Level Up!'):'Weiter üben!'}</div>
+    <div class="res-s">${curSkill.t}${passed?` · Crown ${cr}/5`:''}</div>
+    <div class="res-g">
+      <div><div class="res-n" style="color:${passed?'#10b981':'#ef4444'}">${pct}%</div><div class="res-l">Ergebnis</div></div>
+      <div><div class="res-n" style="color:#f59e0b">+${earned}</div><div class="res-l">XP</div></div>
+      <div><div class="res-n">${score}/${questions.length}</div><div class="res-l">Richtig</div></div>
+    </div>
+    ${passed?`<div class="res-p">✅ Crown ${cr}/5 erreicht!</div>`:''}
+    <button class="gb gb-g" onclick="view='home';render();">Zur Übersicht</button>
+    <button class="gb gb-o" onclick="startLesson('${curSkill.id}')">Nochmal üben</button>
+  </div></div>`;
+}
+
+function renderProfile(app){
+  const hdr=el('div',{class:'hdr'});
+  hdr.innerHTML=`<div class="hdr-r"><h1>👤 Profil</h1></div>`;
+  app.appendChild(hdr);
+  const scr=el('div',{class:'scr'});
+  const totalSkills=SKILLS.length;
+  const doneSkills=SKILLS.filter(s=>getCrowns(s.id)>=1).length;
+  const goldSkills=SKILLS.filter(s=>getCrowns(s.id)>=5).length;
+
+  scr.innerHTML=`
+    <div class="pcard"><h3>📊 Statistiken</h3>
+      <div class="prow"><span>Gesamt-XP</span><span class="pval" style="color:#f59e0b">⭐ ${ST.xp}</span></div>
+      <div class="prow"><span>Streak</span><span class="pval" style="color:#ef4444">🔥 ${ST.streak} Tage</span></div>
+      <div class="prow"><span>Abgeschlossene Skills</span><span class="pval" style="color:#10b981">${doneSkills}/${totalSkills}</span></div>
+      <div class="prow"><span>Gemeisterte Skills (5 Crowns)</span><span class="pval" style="color:#f59e0b">👑 ${goldSkills}</span></div>
+    </div>
+    <div class="pcard"><h3>🎯 Prüfungstermine</h3>
+      <div class="prow"><span>✏️ Klausur 1–3</span><span class="pval">1.–3. Juli 2026</span></div>
+      <div class="prow"><span>🏥 Praktisch</span><span class="pval">31. Juli 2026</span></div>
+      <div class="prow"><span>🗣️ Mündlich</span><span class="pval">15. Sept. 2026</span></div>
+    </div>
+    <div class="pcard"><h3>💾 Daten</h3>
+      <button class="pbtn" onclick="exportData()">⬇️ Fortschritt exportieren</button>
+      <button class="pbtn" style="margin-top:6px" onclick="document.getElementById('imp').click()">⬆️ Fortschritt importieren</button>
+      <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(this.files[0])"/>
+      <button class="pbtn" style="margin-top:6px;color:#ef4444" onclick="resetData()">🔄 Zurücksetzen</button>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:11px;padding:16px 0">
+      Komplett: Tag 1–51 · ${C.length} Konzepte · ${C.length*4}+ Fragenvarianten<br/>
+      PflegeTrainer 2.0 · Saarland 2026
+    </div>`;
+  app.appendChild(scr);
+  renderNav(app);
+}
+
+function exportData(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(ST,null,2)],{type:'application/json'}));
+  a.download='pflege-fortschritt.json';a.click();
+}
+function importData(f){
+  if(!f)return;const r=new FileReader();
+  r.onload=e=>{try{ST=JSON.parse(e.target.result);save();render();alert('✅ Importiert!');}catch{alert('Fehler beim Import.');}};
+  r.readAsText(f);
+}
+function resetData(){
+  if(!confirm('Fortschritt zurücksetzen?'))return;
+  ST={...DEFS};save();render();
+}
+
+// INIT
+load();
+render();
+
+</script>
+</body>
+</html>
